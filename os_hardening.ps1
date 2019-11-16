@@ -1,4 +1,8 @@
 
+Param(
+    [switch] $NoAV
+)
+
 function RemoveApps(){
 	#################################################################
 	Write-Warning 'Removing bloatware...'
@@ -140,6 +144,7 @@ function DisableAdminShares {
 # Disable Advertising ID
 function DisableAdvertisingID {
 	Write-Warning "Disabling Advertising ID..."
+	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AdvertisingInfo" -Name "Enabled" -Type DWord -Value 0
 	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AdvertisingInfo" -Name "DisabledByGroupPolicy" -Type DWord -Value 1
  	Write-Host("Done.")
 }
@@ -149,15 +154,13 @@ function DisableFeedback {
 	Write-Warning "Disabling Feedback..."
 	Set-RegistryValue -Path "HKCU:\SOFTWARE\Microsoft\Siuf\Rules" -Name "NumberOfSIUFInPeriod" -Type DWord -Value 0
 	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\DataCollection" -Name "DoNotShowFeedbackNotifications" -Type DWord -Value 1
+	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\Assistance\Client\1.0" -Name "NoExplicitFeedback" -Type DWord -Value 1
+	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\Assistance\Client\1.0" -Name "NoImplicitFeedback" -Type DWord -Value 1
+	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\Assistance\Client\1.0" -Name "NoOnlineAssist" -Type DWord -Value 1
+	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Assistance\Client\1.0" -Name "NoActiveHelp" -Type DWord -Value 1
+
 	Disable-ScheduledTask -TaskName "Microsoft\Windows\Feedback\Siuf\DmClient" -ErrorAction SilentlyContinue | Out-Null
 	Disable-ScheduledTask -TaskName "Microsoft\Windows\Feedback\Siuf\DmClientOnScenarioDownload" -ErrorAction SilentlyContinue | Out-Null
-
-
-	# Privacy - Disable Microsoft Help feedback.
-	reg add "HKEY_CURRENT_USER\Software\Policies\Microsoft\Assistance\Client\1.0" /v "NoExplicitFeedback" /t REG_DWORD /d 1 /f
-	reg add "HKEY_CURRENT_USER\Software\Policies\Microsoft\Assistance\Client\1.0" /v "NoImplicitFeedback" /t REG_DWORD /d 1 /f
-	reg add "HKEY_CURRENT_USER\Software\Policies\Microsoft\Assistance\Client\1.0" /v "NoOnlineAssist" /t REG_DWORD /d 1 /f
-	reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Assistance\Client\1.0" /v "NoActiveHelp" /t REG_DWORD /d 1 /f
 	Write-Host("Done.")
 }
 
@@ -171,44 +174,43 @@ function DisableBackgroundApps {
 }
 
 function DisableWebSearch {
-	Write-Warning "Disabling Bing Search in Start Menu..."
-	Set-RegistryValue -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Search" -Name "BingSearchEnabled" -Type DWord -Value 0
+	Write-Warning "Disabling Web Search..."
+	Set-RegistryValue -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Search" -Name "BingSearchEnabled" -Type DWord -Value 0     # Disables Bing search
 	Set-RegistryValue -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Search" -Name "CortanaConsent" -Type DWord -Value 0
 	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Windows Search" -Name "DisableWebSearch" -Type DWord -Value 1
 	Write-Host("Done.")
 }
 
-function DisableSmartScreen(){
-	Write-Warning "Disabling SmartScreen Filter..."
-	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\System" -Name "EnableSmartScreen" -Type DWord -Value 0
-	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\MicrosoftEdge\PhishingFilter" -Name "EnabledV9" -Type DWord -Value 0
+function EnableSmartScreen(){
+	Write-Warning "Enabling SmartScreen Filter..."
+    Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\System" -Name "EnableSmartScreen" -Type DWord -Value 1
+    Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\MicrosoftEdge\PhishingFilter" -Name "EnabledV9" -Type DWord -Value 1
+    Set-RegistryValue -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\AppHost" -Name "EnableWebContentEvaluation" -Type Dword -Value 1
 
-
-	# Security option - Enable SmartScreen.
-	#reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\System" /v "EnableSmartScreen" /t REG_DWORD /d 1 /f
-	#reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\System" /v "ShellSmartScreenLevel" /t REG_SZ /d "Warn" /f
+    # Disable SmartScreen
+	# Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\System" -Name "EnableSmartScreen" -Type DWord -Value 0
+	# Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\MicrosoftEdge\PhishingFilter" -Name "EnabledV9" -Type DWord -Value 0
+	# Set-RegistryValue -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\AppHost" -Name "EnableWebContentEvaluation" -Type Dword -Value 0
 	Write-Host("Done.")
 }
 
 function DisableTelemetry {
 	Write-Warning "Disabling Telemetry..."
-	Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\DataCollection" -Name "AllowTelemetry" -Type DWord -Value 0
-	Set-ItemProperty -Path "HKLM:\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Policies\DataCollection" -Name "AllowTelemetry" -Type DWord -Value 0
-	Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\DataCollection" -Name "AllowTelemetry" -Type DWord -Value 0
-	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\PreviewBuilds" -Name "AllowBuildPreview" -Type DWord -Value 0
+	Set-RegistryValue -Path "Registry::HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\DataCollection" -Name "AllowTelemetry" -Type Dword -Value 0
+	Set-RegistryValue -Path "Registry::HKLM\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Policies\DataCollection" -Name "AllowTelemetry" -Type Dword -Value 0
+	Set-RegistryValue -Path "Registry::HKLM\SOFTWARE\Policies\Microsoft\Windows\DataCollection" -Name "AllowTelemetry" -Type Dword -Value 0
+	Set-RegistryValue -Path "Registry::HKLM\SOFTWARE\Policies\Microsoft\Windows\PreviewBuilds" -Name "AllowBuildPreview" -Type Dword -Value 0
+	Set-RegistryValue -Path "Registry::HKCU\Software\Policies\Microsoft\Windows\DataCollection" -Name "AllowTelemetry" -Type Dword -Value 0
+    Set-RegistryValue -Path "Registry::HKLM\SOFTWARE\Policies\Microsoft\Windows\AppCompat" -Name"AITEnable" -Type Dword -Value 0
+    Set-RegistryValue -Path "Registry::HKLM\SOFTWARE\Policies\Microsoft\Windows\DataCollection" -Name "LimitEnhancedDiagnosticDataWindowsAnalytics" -Type Dword -Value 0
+	Set-RegistryValue -Path "Registry::HKLM\SOFTWARE\Policies\Microsoft\Windows\DataCollection" -Name "DoNotShowFeedbackNotifications" -Type Dword -Value 1
+
 	Disable-ScheduledTask -TaskName "Microsoft\Windows\Application Experience\Microsoft Compatibility Appraiser" | Out-Null
 	Disable-ScheduledTask -TaskName "Microsoft\Windows\Application Experience\ProgramDataUpdater" | Out-Null
 	Disable-ScheduledTask -TaskName "Microsoft\Windows\Autochk\Proxy" | Out-Null
 	Disable-ScheduledTask -TaskName "Microsoft\Windows\Customer Experience Improvement Program\Consolidator" | Out-Null
 	Disable-ScheduledTask -TaskName "Microsoft\Windows\Customer Experience Improvement Program\UsbCeip" | Out-Null
 	Disable-ScheduledTask -TaskName "Microsoft\Windows\DiskDiagnostic\Microsoft-Windows-DiskDiagnosticDataCollector" | Out-Null
-
-	# Privacy - Disable telemetry (or set to Basic in non-enterprise versions).
-	reg add "HKEY_CURRENT_USER\Software\Policies\Microsoft\Windows\DataCollection" /v "AllowTelemetry" /t REG_DWORD /d 0 /f
-	reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\AppCompat" /v "AITEnable" /t REG_DWORD /d 0 /f
-	reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\DataCollection" /v "AllowTelemetry" /t REG_DWORD /d 0 /f
-	reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\DataCollection" /v "DoNotShowFeedbackNotifications" /t REG_DWORD /d 1 /f
-	reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\DataCollection" /v "LimitEnhancedDiagnosticDataWindowsAnalytics" /t REG_DWORD /d 0 /f
  	Write-Host("Done.")
 }
 
@@ -396,13 +398,6 @@ function FlushCaches(){
 	Remove-Item -Path "$env:SystemRoot\System32\drivers\etc\hosts" -force
 	New-Item -Path "$env:SystemRoot\System32\drivers\etc" -Name 'hosts' -ItemType 'file' -Value '# Flushed.' -Force
 	Write-Host 'Done.'
-}
-
-function DisableBingSearch(){
-	# Disable Bing Search in Start Menu
-	Write-Warning "Disabling Bing Search in Start Menu..."
-	Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Search" -Name "BingSearchEnabled" -Type DWord -Value 0
-	Write-Host("Done.")
 }
 
 function DisableWiFiSense(){
@@ -789,7 +784,7 @@ function Misc(){
 	reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\CloudContent" /v "DisableWindowsConsumerFeatures" /t REG_DWORD /d 1 /f
 	# Privacy - Disable device metadata retrieval from the Internet.
 	reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\Device Metadata" /v "PreventDeviceMetadataFromNetwork" /t REG_DWORD /d 1 /f
-	# Privacy - Disable and configurate Input Personalization and reporting.
+	# Privacy - Disable and configure Input Personalization and reporting.
 	reg add "HKEY_CURRENT_USER\Software\Policies\Microsoft\InputPersonalization" /v "RestrictImplicitInkCollection" /t REG_DWORD /d 1 /f
 	reg add "HKEY_CURRENT_USER\Software\Policies\Microsoft\InputPersonalization" /v "RestrictImplicitTextCollection" /t REG_DWORD /d 1 /f
 	reg add "HKEY_CURRENT_USER\Software\Policies\Microsoft\Windows\HandwritingErrorReports" /v "PreventHandwritingErrorReports" /t REG_DWORD /d 1 /f
@@ -1060,6 +1055,7 @@ Write-Warning 'Setting UAC level to High...'
 Set-UACLevel 3
 Write-Host 'Done.'
 
+
 # Remove Unneeded Apps
 RemoveApps
 # Stop and Disable Unneeded Services
@@ -1068,12 +1064,10 @@ DisableServices
 DisableScheduledTasks
 # Disable WiFi-Sense
 DisableWiFiSense
-# Disable Bing Search
-DisableBingSearch
 # Disable Telemetry
 DisableTelemetry
 # Disable SmartScreen
-DisableSmartScreen
+EnableSmartScreen
 # Disable WebSearch
 DisableWebSearch
 # Disable DisableBackgroundApps
@@ -1082,6 +1076,9 @@ DisableBackgroundApps
 DisableFeedback
 # Disable Adv. ID
 DisableAdvertisingID
+# Disables Sticky keys
+DisableStickyKeys
+
 # Privacy - Internet Explorer
 IE_hardening
 # Privacy - Edge Hardening
@@ -1116,16 +1113,19 @@ DisableAdminShares
 # Disable the SMB Server
 DisableSMBServer
 
-# Disables Sticky keys
-DisableStickyKeys
-# Enable and Configure Windows Defender
-ConfigureWinDef
+
 # Sets user password restrictions
 SetPasswordPolicy
-
 # Set login screen MOTD
 SetLoginMOTD
 
+# Enforce Exploit Mitigation settings (System-level only)
+Set-ProcessMitigation -System -Enable DEP, CFG, ForceRelocateImages, BottomUp, SEHOP, TerminateOnError, HighEntropy
+
+# Enable and Configure Windows Defender
+if(!$NoAV){
+    ConfigureWinDef
+}
 
 # Restart the device
 Write-Warning 'Hardening has finished successfully. Would you like to restart now?'

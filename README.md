@@ -7,7 +7,7 @@ The Powershell script is intended to harden your OS. It does so by turning on/of
 It also uninstalls and disables known services and default applications which are not needed by the majority of the users. 
 
 
-Thus, it attempts to remove/disable every unneeded application, protocol, and more in general software that stand on your operating system just to increase the attack surface. Among the applications that the script removes you can find the Bing and XBox applications that are installed by default and many others. 
+Thus, it attempts to remove/disable every unneeded application, protocol, and more in general software that stand on your operating system just to increase the attack surface. Among the applications the script removes you can find the Bing and XBox applications that are installed by default and many others. 
 
 Some of the protocols disabled by the script are mentioned below:
 - NetBios
@@ -36,6 +36,9 @@ Open a CMD prompt and run the following command from the directory that contains
 
       powershell -exec bypass ".\os_hardening.ps1"
 
+In case you don't use Windows Defender as your anti-malware solution, run the script as shown below:
+
+    powershell -exec bypass ".\os_hardening.ps1 -NoAV"
 
 ### Contribution
 
