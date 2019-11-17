@@ -112,18 +112,18 @@ function DisableLLMNR {
 # Disable SMB Server - Completely disables file and printer sharing, but leaves the system able to connect to another SMB server as a client
 function DisableSMBServer {
 	Write-Warning "Disabling SMB Server..."
-	
+
 	Set-SmbServerConfiguration -EnableSMB1Protocol $false -Force
-	# Windows 8.1 and Windows 10 
+	# Windows 8.1 and Windows 10
 	# Get-WindowsOptionalFeature –Online –FeatureName SMB1Protocol
 	# Enable-WindowsOptionalFeature -Online -FeatureName SMB1Protocol
 	Disable-WindowsOptionalFeature -Online -FeatureName SMB1Protocol
-	
+
 	# Get-SmbServerConfiguration | Select EnableSMB2Protocol
 	Set-SmbServerConfiguration -EnableSMB2Protocol $false -Force
-	
+
 	Set-RegistryValue -Path "HKLM:SYSTEM\CurrentControlSet\services\NetBT\Parameters\" -Name SMBDeviceEnabled -Value 0 -Type Dword
-	
+
 	Write-Host("Done.")
 }
 
@@ -320,7 +320,7 @@ function EnableTLS1_2(){
 	Write-Warning 'Enabling TLSv1.2...'
 	Set-Variable -Name 'Path' -Value 'Registry::HKLM\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Protocols'
 	Set-Variable -Name 'Protocol' -Value 'TLS 1.2'
-    
+
 	if (!(Test-Path "$Path\$Protocol")){
 		New-Item -Path $Path -Name $Protocol -Type 'Directory' -ErrorAction 'SilentlyContinue'
 	}
@@ -343,34 +343,37 @@ function EnableTLS1_2(){
 	Write-Host 'Done.'
 }
 
-function DisableProtocols(){
+function DisableNetSecProtocols(){
 	#################################################################
-	Write-Warning 'Disabling unnecessary protocols...'
+	Write-Warning 'Disabling unsafe network protocols...'
 	Set-Variable -Name 'Path' -Value 'Registry::HKLM\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Protocols'
 	$Protocols = @('DTLS 1.0', 'PCT 1.0', 'SSL 2.0', 'SSL 3.0', 'TLS 1.0', 'TLS 1.1')
 	Foreach ($Protocol in $Protocols) {
 		if(!(Test-Path "$Path\$Protocol")){
-            New-Item -Path $Path -Name $Protocol -Type 'Directory' 
+            New-Item -Path $Path -Name $Protocol -Type 'Directory'
         }
 		Set-Variable -Name 'key' -Value $Path\$Protocol
-        Set-RegistryValue -Path $key -Name 'Client' -Type 'Directory' 
+        Set-RegistryValue -Path $key -Name 'Client' -Type 'Directory'
 	    Set-RegistryValue -Path $key -Name 'Server' -Type 'Directory'
-	
+
         Set-RegistryValue -Path "$key\Client" -Name "DisabledByDefault" -Value "1" -Type 'Dword'
         Set-RegistryValue -Path "$key\Client" -Name "Enabled" -Value "0" -Type 'Dword'
         Set-RegistryValue -Path "$key\Server" -Name "DisabledByDefault" -Value "1" -Type 'Dword'
         Set-RegistryValue -Path "$key\Server" -Name "Enabled" -Value "0" -Type 'Dword'
 	}
 	Write-Host 'Done.'
+
+    # Enable TLS 1.2
+	EnableTLS1_2
 }
 
 function DisableNetworks(){
 	Write-Warning 'Disabling unnecessary network connections...'
 	netsh Interface IPv4 Set Global mldlevel=none # Disables IGMPLevel
-	Set-RegistryValue -Path 'Registry::HKLM\SYSTEM\CurrentControlSet\Services\Tcpip6\Parameters' -Name 'DisabledComponents' -Value '0xFF' -Type 'Dword' # Disables IPv6 completely
-	Set-RegistryValue -Path 'Registry::HKLM\SYSTEM\CurrentControlSet\Control\Remote Assistance' -Name 'fAllowToGetHelp' -Value '0' -Type 'Dword' # Disables Remote Assistance
-	Set-RegistryValue -Path 'Registry::HKLM\SYSTEM\CurrentControlSet\Control\Terminal Server' -Name 'fDenyTSConnections' -Value '1' -Type 'Dword' # Disables Remote Desktop
-	# Get-NetAdapter -Name '*' | Set-DNSClient -Interface $_ -RegisterThisConnectionsAddress $FALSE # Disables 'Register this connection's addresses in DNS' 
+	Set-RegistryValue -Path 'HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip6\Parameters' -Name 'DisabledComponents' -Value '0xFF' -Type 'Dword' # Disables IPv6 completely
+	Set-RegistryValue -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Remote Assistance' -Name 'fAllowToGetHelp' -Value '0' -Type 'Dword' # Disables Remote Assistance
+	Set-RegistryValue -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Terminal Server' -Name 'fDenyTSConnections' -Value '1' -Type 'Dword' # Disables Remote Desktop
+	# Get-NetAdapter -Name '*' | Set-DNSClient -Interface $_ -RegisterThisConnectionsAddress $FALSE # Disables 'Register this connection's addresses in DNS'
 	Disable-NetAdapterBinding -Name '*' -ComponentID 'ms_lldp' # Microsoft LLDP Protocol Driver
 	Disable-NetAdapterBinding -Name '*' -ComponentID 'ms_implat' # Microsoft Network Adapter Multiplexor Protocol
 	Disable-NetAdapterBinding -Name '*' -ComponentID 'ms_lltdio' # Link-Layer Topology Discovery Mapper I/O Driver
@@ -403,7 +406,7 @@ function FlushCaches(){
 function DisableWiFiSense(){
 	# Disable Wi-Fi Sense
 	Write-Warning "Disabling Wi-Fi Sense..."
-	
+
 	Set-RegistryValue -Path "HKLM:\Software\Microsoft\PolicyManager\default\WiFi\AllowWiFiHotSpotReporting" -Name "Value" -Type DWord -Value 0
 	Set-RegistryValue -Path "HKLM:\Software\Microsoft\PolicyManager\default\WiFi\AllowAutoConnectToWiFiSenseHotspots" -Name "Value" -Type DWord -Value 0
 
@@ -413,7 +416,7 @@ function DisableWiFiSense(){
 }
 
 function DisableScheduledTasks(){
-	Write-Warning "Disabling unneeded scheduled tasks"	
+	Write-Warning "Disabling unneeded scheduled tasks"
 	# Privacy - Disable telemetry scheduled tasks.
 	# Disable Customer Experience Improvement Program (CEIP) tasks.
 	schtasks /change /tn "\Microsoft\Windows\Autochk\Proxy" /disable
@@ -442,191 +445,190 @@ function DisableScheduledTasks(){
 function Office_hardening(){
 	Write-Warning "Starting Office hardening"
 	# Privacy - Disable feedback in Office.
-	reg add "HKEY_CURRENT_USER\Software\Policies\Microsoft\office\16.0\common\feedback" /v "enabled" /t REG_DWORD /d 0 /f
-	reg add "HKEY_CURRENT_USER\Software\Policies\Microsoft\office\16.0\common\feedback" /v "includescreenshot" /t REG_DWORD /d 0 /f
+	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\office\16.0\common\feedback" -Name "enabled" -Type Dword -Value 0
+	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\office\16.0\common\feedback" -Name "includescreenshot" -Type Dword -Value 0
 
 	# Privacy - Disable data collection and telemetry in Office.
-	reg add "HKEY_CURRENT_USER\Software\Policies\Microsoft\office\16.0\common\general" /v "notrack" /t REG_DWORD /d 1 /f
-	reg add "HKEY_CURRENT_USER\Software\Policies\Microsoft\office\16.0\common\general" /v "optindisable" /t REG_DWORD /d 1 /f
-	reg add "HKEY_CURRENT_USER\Software\Policies\Microsoft\office\16.0\common\general" /v "shownfirstrunoptin" /t REG_DWORD /d 1 /f
-	reg add "HKEY_CURRENT_USER\Software\Policies\Microsoft\office\16.0\common\ptwatson" /v "ptwoptin" /t REG_DWORD /d 0 /f
-	reg add "HKEY_CURRENT_USER\Software\Policies\Microsoft\office\16.0\firstrun" /v "bootedrtm" /t REG_DWORD /d 1 /f
-	reg add "HKEY_CURRENT_USER\Software\Policies\Microsoft\office\16.0\firstrun" /v "disablemovie" /t REG_DWORD /d 1 /f
-	reg add "HKEY_CURRENT_USER\Software\Policies\Microsoft\office\16.0\osm" /v "enablefileobfuscation" /t REG_DWORD /d 1 /f
-	reg add "HKEY_CURRENT_USER\Software\Policies\Microsoft\office\16.0\osm" /v "enablelogging" /t REG_DWORD /d 0 /f
-	reg add "HKEY_CURRENT_USER\Software\Policies\Microsoft\office\16.0\osm" /v "enableupload" /t REG_DWORD /d 0 /f
-	reg add "HKEY_CURRENT_USER\Software\Policies\Microsoft\office\16.0\osm\preventedapplications" /v "accesssolution" /t REG_DWORD /d 1 /f
-	reg add "HKEY_CURRENT_USER\Software\Policies\Microsoft\office\16.0\osm\preventedapplications" /v "olksolution" /t REG_DWORD /d 1 /f
-	reg add "HKEY_CURRENT_USER\Software\Policies\Microsoft\office\16.0\osm\preventedapplications" /v "onenotesolution" /t REG_DWORD /d 1 /f
-	reg add "HKEY_CURRENT_USER\Software\Policies\Microsoft\office\16.0\osm\preventedapplications" /v "pptsolution" /t REG_DWORD /d 1 /f
-	reg add "HKEY_CURRENT_USER\Software\Policies\Microsoft\office\16.0\osm\preventedapplications" /v "projectsolution" /t REG_DWORD /d 1 /f
-	reg add "HKEY_CURRENT_USER\Software\Policies\Microsoft\office\16.0\osm\preventedapplications" /v "publishersolution" /t REG_DWORD /d 1 /f
-	reg add "HKEY_CURRENT_USER\Software\Policies\Microsoft\office\16.0\osm\preventedapplications" /v "visiosolution" /t REG_DWORD /d 1 /f
-	reg add "HKEY_CURRENT_USER\Software\Policies\Microsoft\office\16.0\osm\preventedapplications" /v "wdsolution" /t REG_DWORD /d 1 /f
-	reg add "HKEY_CURRENT_USER\Software\Policies\Microsoft\office\16.0\osm\preventedapplications" /v "xlsolution" /t REG_DWORD /d 1 /f
-	reg add "HKEY_CURRENT_USER\Software\Policies\Microsoft\office\16.0\osm\preventedsolutiontypes" /v "agave" /t REG_DWORD /d 1 /f
-	reg add "HKEY_CURRENT_USER\Software\Policies\Microsoft\office\16.0\osm\preventedsolutiontypes" /v "appaddins" /t REG_DWORD /d 1 /f
-	reg add "HKEY_CURRENT_USER\Software\Policies\Microsoft\office\16.0\osm\preventedsolutiontypes" /v "comaddins" /t REG_DWORD /d 1 /f
-	reg add "HKEY_CURRENT_USER\Software\Policies\Microsoft\office\16.0\osm\preventedsolutiontypes" /v "documentfiles" /t REG_DWORD /d 1 /f
-	reg add "HKEY_CURRENT_USER\Software\Policies\Microsoft\office\16.0\osm\preventedsolutiontypes" /v "templatefiles" /t REG_DWORD /d 1 /f
-  
-	reg add 'HKEY_CURRENT_USER\Software\Policies\Microsoft\office\16.0\common\services\fax' /v 'nofax' /t REG_DWORD /d 1 /f # Disables online Fax services
-	
-	reg add 'HKEY_CURRENT_USER\Software\Policies\Microsoft\office\16.0\access\security' /v 'vbawarnings' /t REG_DWORD /d '4' /f # Blocks Macros and other content execution
-	Set-RegistryValue -Path 'Registry::HKCU\Software\Policies\Microsoft\office\16.0\excel\security' -Name 'vbawarnings' -Value '4' -Type 'Dword' # Blocks Macros and other content execution
-	Set-RegistryValue -Path 'Registry::HKCU\Software\Policies\Microsoft\office\16.0\excel\security' -Name 'blockcontentexecutionfrominternet' -Value '1' -Type 'Dword' # Blocks Macros and other content execution
-	Set-RegistryValue -Path 'Registry::HKCU\Software\Policies\Microsoft\office\16.0\excel\security' -Name 'excelbypassencryptedmacroscan' -Value '0' -Type 'Dword' # Blocks Macros and other content execution
-	Set-RegistryValue -Path 'Registry::HKCU\Software\Policies\Microsoft\office\16.0\ms project\security' -Name 'vbawarnings' -Value '4' -Type 'Dword'  # Blocks Macros and other content execution
-	Set-RegistryValue -Path 'Registry::HKCU\Software\Policies\Microsoft\office\16.0\ms project\security' -Name 'level' -Value '4' -Type 'Dword'  # Blocks Macros and other content execution
-	Set-RegistryValue -Path 'Registry::HKCU\Software\Policies\Microsoft\office\16.0\outlook\security' -Name 'level' -Value '4' -Type 'Dword'  # Blocks Macros and other content execution
-	Set-RegistryValue -Path 'Registry::HKCU\Software\Policies\Microsoft\office\16.0\powerpoint\security' -Name 'vbawarnings' -Value '4' -Type 'Dword'  # Blocks Macros and other content execution
-	Set-RegistryValue -Path 'Registry::HKCU\Software\Policies\Microsoft\office\16.0\powerpoint\security' -Name 'blockcontentexecutionfrominternet' -Value '1' -Type 'Dword'  # Blocks Macros and other content execution
-	Set-RegistryValue -Path 'Registry::HKCU\Software\Policies\Microsoft\office\16.0\publisher\security' -Name 'vbawarnings' -Value '4' -Type 'Dword'  # Blocks Macros and other content execution
-	Set-RegistryValue -Path 'Registry::HKCU\Software\Policies\Microsoft\office\16.0\visio\security' -Name 'vbawarnings' -Value '4' -Type 'Dword'  # Blocks Macros and other content execution
-	Set-RegistryValue -Path 'Registry::HKCU\Software\Policies\Microsoft\office\16.0\visio\security' -Name 'blockcontentexecutionfrominternet' -Value '1' -Type 'Dword'  # Blocks Macros and other content execution
-	Set-RegistryValue -Path 'Registry::HKCU\Software\Policies\Microsoft\office\16.0\word\security' -Name 'vbawarnings' -Value '4' -Type 'Dword'  # Blocks Macros and other content execution
-	Set-RegistryValue -Path 'Registry::HKCU\Software\Policies\Microsoft\office\16.0\word\security' -Name 'blockcontentexecutionfrominternet' -Value '1' -Type 'Dword'  # Blocks Macros and other content execution
-	Set-RegistryValue -Path 'Registry::HKCU\Software\Policies\Microsoft\office\16.0\word\security' -Name 'wordbypassencryptedmacroscan' -Value '0' -Type 'Dword'  # Blocks Macros and other content execution
-	Set-RegistryValue -Path 'Registry::HKCU\Software\Policies\Microsoft\office\common\security' -Name 'automationsecurity' -Value '3' -Type 'Dword'  # Blocks Macros and other content execution
-	Set-RegistryValue -Path 'Registry::HKCU\Software\Policies\Microsoft\office\16.0\outlook\options\mail' -Name 'blockextcontent' -Value '1' -Type 'Dword'  # Disables external content by default in Outlook emails
-	Set-RegistryValue -Path 'Registry::HKCU\Software\Policies\Microsoft\office\16.0\outlook\options\mail' -Name 'junkmailenablelinks' -Value '0' -Type 'Dword'  # Disables external content by default in Outlook emails
-    
+	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\office\16.0\common\general" -Name "notrack" -Type Dword -Value 1
+	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\office\16.0\common\general" -Name "optindisable" -Type Dword -Value 1
+	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\office\16.0\common\general" -Name "shownfirstrunoptin" -Type Dword -Value 1
+	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\office\16.0\common\ptwatson" -Name "ptwoptin" -Type Dword -Value 0
+	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\office\16.0\firstrun" -Name "bootedrtm" -Type Dword -Value 1
+	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\office\16.0\firstrun" -Name "disablemovie" -Type Dword -Value 1
+	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\office\16.0\osm" -Name "enablefileobfuscation" -Type Dword -Value 1
+	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\office\16.0\osm" -Name "enablelogging" -Type Dword -Value 0
+	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\office\16.0\osm" -Name "enableupload" -Type Dword -Value 0
+	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\office\16.0\osm\preventedapplications" -Name "accesssolution" -Type Dword -Value 1
+	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\office\16.0\osm\preventedapplications" -Name "olksolution" -Type Dword -Value 1
+	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\office\16.0\osm\preventedapplications" -Name "onenotesolution" -Type Dword -Value 1
+	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\office\16.0\osm\preventedapplications" -Name "pptsolution" -Type Dword -Value 1
+	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\office\16.0\osm\preventedapplications" -Name "projectsolution" -Type Dword -Value 1
+	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\office\16.0\osm\preventedapplications" -Name "publishersolution" -Type Dword -Value 1
+	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\office\16.0\osm\preventedapplications" -Name "visiosolution" -Type Dword -Value 1
+	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\office\16.0\osm\preventedapplications" -Name "wdsolution" -Type Dword -Value 1
+	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\office\16.0\osm\preventedapplications" -Name "xlsolution" -Type Dword -Value 1
+	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\office\16.0\osm\preventedsolutiontypes" -Name "agave" -Type Dword -Value 1
+	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\office\16.0\osm\preventedsolutiontypes" -Name "appaddins" -Type Dword -Value 1
+	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\office\16.0\osm\preventedsolutiontypes" -Name "comaddins" -Type Dword -Value 1
+	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\office\16.0\osm\preventedsolutiontypes" -Name "documentfiles" -Type Dword -Value 1
+	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\office\16.0\osm\preventedsolutiontypes" -Name "templatefiles" -Type Dword -Value 1
+
+	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\16.0\common\services\fax' -Name 'nofax' -Type Dword -Value 1 # Disables online Fax services
+
+	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\16.0\access\security' -Name 'vbawarnings' -Type Dword -Value 4    # Blocks Macros and other content execution
+	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\16.0\excel\security' -Name 'vbawarnings' -Value '4' -Type 'Dword' # Blocks Macros and other content execution
+	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\16.0\excel\security' -Name 'blockcontentexecutionfrominternet' -Value '1' -Type 'Dword' # Blocks Macros and other content execution
+	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\16.0\excel\security' -Name 'excelbypassencryptedmacroscan' -Value '0' -Type 'Dword' # Blocks Macros and other content execution
+	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\16.0\ms project\security' -Name 'vbawarnings' -Value '4' -Type 'Dword'  # Blocks Macros and other content execution
+	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\16.0\ms project\security' -Name 'level' -Value '4' -Type 'Dword'  # Blocks Macros and other content execution
+	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\16.0\outlook\security' -Name 'level' -Value '4' -Type 'Dword'  # Blocks Macros and other content execution
+	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\16.0\powerpoint\security' -Name 'vbawarnings' -Value '4' -Type 'Dword'  # Blocks Macros and other content execution
+	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\16.0\powerpoint\security' -Name 'blockcontentexecutionfrominternet' -Value '1' -Type 'Dword'  # Blocks Macros and other content execution
+	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\16.0\publisher\security' -Name 'vbawarnings' -Value '4' -Type 'Dword'  # Blocks Macros and other content execution
+	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\16.0\visio\security' -Name 'vbawarnings' -Value '4' -Type 'Dword'  # Blocks Macros and other content execution
+	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\16.0\visio\security' -Name 'blockcontentexecutionfrominternet' -Value '1' -Type 'Dword'  # Blocks Macros and other content execution
+	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\16.0\word\security' -Name 'vbawarnings' -Value '4' -Type 'Dword'  # Blocks Macros and other content execution
+	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\16.0\word\security' -Name 'blockcontentexecutionfrominternet' -Value '1' -Type 'Dword'  # Blocks Macros and other content execution
+	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\16.0\word\security' -Name 'wordbypassencryptedmacroscan' -Value '0' -Type 'Dword'  # Blocks Macros and other content execution
+	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\common\security' -Name 'automationsecurity' -Value '3' -Type 'Dword'  # Blocks Macros and other content execution
+	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\16.0\outlook\options\mail' -Name 'blockextcontent' -Value '1' -Type 'Dword'  # Disables external content by default in Outlook emails
+	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\16.0\outlook\options\mail' -Name 'junkmailenablelinks' -Value '0' -Type 'Dword'  # Disables external content by default in Outlook emails
+
 	# Privacy - Disable saving/login to OneDrive in Office.
-	reg add "HKEY_CURRENT_USER\Software\Policies\Microsoft\office\16.0\common\general" /v "skydrivesigninoption" /t REG_DWORD /d 0 /f
-	reg add "HKEY_CURRENT_USER\Software\Policies\Microsoft\office\16.0\common\signin" /v "signinoptions" /t REG_DWORD /d 3 /f
+	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\office\16.0\common\general" -Name "skydrivesigninoption" -Type Dword -Value 0
+	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\office\16.0\common\signin" -Name "signinoptions" -Type Dword -Value 3
 
 	# Privacy (optional) - Prevent Office from connecting to the Internet.
-	reg add "HKEY_CURRENT_USER\Software\Policies\Microsoft\office\16.0\common\internet" /v "useonlinecontent" /t REG_DWORD /d 0 /f
+	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\office\16.0\common\internet" -Name "useonlinecontent" -Type Dword -Value 0
 
 	# Security - Enable automatic updates for Office.
-	reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\office\16.0\common\officeupdate" /v "enableautomaticupdates" /t REG_DWORD /d 1 /f
-	reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\office\16.0\common\officeupdate" /v "hideenabledisableupdates" /t REG_DWORD /d 1 /f
+	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\office\16.0\common\officeupdate" -Name "enableautomaticupdates" -Type Dword -Value 1
+	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\office\16.0\common\officeupdate" -Name "hideenabledisableupdates" -Type Dword -Value 1
 
 	# Privacy - Disable online repair in Office.
-	reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\office\16.0\common\officeupdate" /v "onlinerepair" /t REG_DWORD /d 0 /f
-	reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\office\16.0\common\officeupdate" /v "fallbacktocdn" /t REG_DWORD /d 0 /f	
-    
+	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\office\16.0\common\officeupdate" -Name "onlinerepair" -Type Dword -Value 0
+	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\office\16.0\common\officeupdate" -Name "fallbacktocdn" -Type Dword -Value 0
+
 	Write-Host "Done."
 }
 
 function RDP_hardening(){
 	# Security - Disable and configure Windows Remote Desktop and Remote Desktop Services.
-	reg add "HKEY_CURRENT_USER\Software\Policies\Microsoft\Windows NT\Terminal Services" /v "AllowSignedFiles" /t REG_DWORD /d 0 /f
-	reg add "HKEY_CURRENT_USER\Software\Policies\Microsoft\Windows NT\Terminal Services" /v "AllowUnsignedFiles" /t REG_DWORD /d 0 /f
-	reg add "HKEY_CURRENT_USER\Software\Policies\Microsoft\Windows NT\Terminal Services" /v "DisablePasswordSaving" /t REG_DWORD /d 1 /f
-	reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Conferencing" /v "NoRDS" /t REG_DWORD /d 1 /f
-	reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\WinRM\Service\WinRS" /v "AllowRemoteShellAccess" /t REG_DWORD /d 0 /f
-	reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services" /v "AllowSignedFiles" /t REG_DWORD /d 0 /f
-	reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services" /v "AllowUnsignedFiles" /t REG_DWORD /d 0 /f
-	reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services" /v "CreateEncryptedOnlyTickets" /t REG_DWORD /d 1 /f
-	reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services" /v "DisablePasswordSaving" /t REG_DWORD /d 1 /f
-	reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services" /v "fAllowToGetHelp" /t REG_DWORD /d 0 /f
-	reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services" /v "fAllowUnsolicited" /t REG_DWORD /d 0 /f
-	reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services" /v "fDenyTSConnections" /t REG_DWORD /d 1 /f
-	reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services\Client" /v "fEnableUsbBlockDeviceBySetupClass" /t REG_DWORD /d 1 /f
-	reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services\Client" /v "fEnableUsbNoAckIsochWriteToDevice" /t REG_DWORD /d 80 /f
-	reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services\Client" /v "fEnableUsbSelectDeviceByInterface" /t REG_DWORD /d 1 /f
-	reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\WindowsFirewall\StandardProfile\RemoteAdminSettings" /v "Enabled" /t REG_DWORD /d 0 /f
-	reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\WindowsFirewall\StandardProfile\Services\RemoteDesktop" /v "Enabled" /t REG_DWORD /d 0 /f
-	reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\WindowsFirewall\StandardProfile\Services\UPnPFramework" /v "Enabled" /t REG_DWORD /d 0 /f
+	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\Windows NT\Terminal Services" -Name "AllowSignedFiles" -Type Dword -Value 0
+	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\Windows NT\Terminal Services" -Name "AllowUnsignedFiles" -Type Dword -Value 0
+	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\Windows NT\Terminal Services" -Name "DisablePasswordSaving" -Type Dword -Value 1
+	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Conferencing" -Name "NoRDS" -Type Dword -Value 1
+	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WinRM\Service\WinRS" -Name "AllowRemoteShellAccess" -Type Dword -Value 0
+	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services" -Name "AllowSignedFiles" -Type Dword -Value 0
+	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services" -Name "AllowUnsignedFiles"-Type Dword -Value 0
+	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services" -Name "CreateEncryptedOnlyTickets" -Type Dword -Value 1
+	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services" -Name "DisablePasswordSaving" -Type Dword -Value 1
+	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services" -Name "fAllowToGetHelp" -Type Dword -Value 0
+	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services" -Name "fAllowUnsolicited" -Type Dword -Value 0
+	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services" -Name "fDenyTSConnections" -Type Dword -Value 1
+	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services\Client" -Name "fEnableUsbBlockDeviceBySetupClass" -Type Dword -Value 1
+	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services\Client" -Name "fEnableUsbNoAckIsochWriteToDevice" -Type Dword -Value 80
+	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services\Client" -Name "fEnableUsbSelectDeviceByInterface" -Type Dword -Value 1
+	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\WindowsFirewall\StandardProfile\RemoteAdminSettings" -Name "Enabled" -Type Dword -Value 0
+	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\WindowsFirewall\StandardProfile\Services\RemoteDesktop" -Name "Enabled" -Type Dword -Value 0
+	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\WindowsFirewall\StandardProfile\Services\UPnPFramework" -Name "Enabled" -Type Dword -Value 0
 }
 
 function Edge_hardening(){
 
 	Write-Warning "Starting Edge Hardening..."
-	
+
 	# Security (optional) - Disable Flash player in Edge.
-	Set-RegistryValue -Path "Registry::HKEY_CURRENT_USER\Software\Policies\Microsoft\MicrosoftEdge\Addons" -Name "FlashPlayerEnabled" -Value '0' -Type 'Dword'
+	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\MicrosoftEdge\Addons" -Name "FlashPlayerEnabled" -Value '0' -Type 'Dword'
 
 	# Privacy (optional) - Send the Do Not Track (DNT) request header in Edge.
-	Set-RegistryValue -Path "Registry::HKEY_CURRENT_USER\Software\Policies\Microsoft\MicrosoftEdge\Main" -Name "DoNotTrack" -Value '1' -Type 'Dword'
+	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\MicrosoftEdge\Main" -Name "DoNotTrack" -Value '1' -Type 'Dword'
 
 	# Privacy (optional) - Disable third-party cookies in Edge.
-	Set-RegistryValue -Path "Registry::HKEY_CURRENT_USER\Software\Policies\Microsoft\MicrosoftEdge\Main" -Name "Cookies" -Value '1' -Type 'Dword'
+	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\MicrosoftEdge\Main" -Name "Cookies" -Value '1' -Type 'Dword'
 
 	# Privacy - Prevent data collection in Edge, and generally improve privacy.
-	reg add "HKEY_CURRENT_USER\Software\Policies\Microsoft\MicrosoftEdge\Main" /v "PreventLiveTileDataCollection" /t REG_DWORD /d 1 /f
-	reg add "HKEY_CURRENT_USER\Software\Policies\Microsoft\Windows\EdgeUI" /v "DisableMFUTracking" /t REG_DWORD /d 1 /f
-	reg add "HKEY_CURRENT_USER\Software\Policies\Microsoft\Windows\EdgeUI" /v "DisableRecentApps" /t REG_DWORD /d 1 /f
-	reg add "HKEY_CURRENT_USER\Software\Policies\Microsoft\Windows\EdgeUI" /v "TurnOffBackstack" /t REG_DWORD /d 1 /f
+	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\MicrosoftEdge\Main" -Name "PreventLiveTileDataCollection" -Value '1' -Type 'Dword'
+	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\Windows\EdgeUI" -Name "DisableMFUTracking" -Value '1' -Type 'Dword'
+	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\Windows\EdgeUI" -Name "DisableRecentApps" -Value '1' -Type 'Dword'
+	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\Windows\EdgeUI" -Name "TurnOffBackstack" -Value '1' -Type 'Dword'
 
 	# Security option - Enable Edge phising filter.
-	reg add "HKEY_CURRENT_USER\Software\Policies\Microsoft\MicrosoftEdge\PhishingFilter" /v "EnabledV9" /t REG_DWORD /d 1 /f
-	reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\MicrosoftEdge\PhishingFilter" /v "EnabledV9" /t REG_DWORD /d 1 /f
+	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\MicrosoftEdge\PhishingFilter" -Name "EnabledV9" -Value '1' -Type 'Dword'
+	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\MicrosoftEdge\PhishingFilter" -Name "EnabledV9" -Value '1' -Type 'Dword'
 
 	# Privacy option - Disable Edge phising filter.
-	# reg add "HKEY_CURRENT_USER\Software\Policies\Microsoft\MicrosoftEdge\PhishingFilter" /v "EnabledV9" /t REG_DWORD /d 0 /f
+	# Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\MicrosoftEdge\PhishingFilter" -Name "EnabledV9" -Type Dword -Value 0
 
 	# Privacy (optional) - Clear browsing history on exit in Edge.
-	reg add "HKEY_CURRENT_USER\Software\Policies\Microsoft\MicrosoftEdge\Privacy" /v "ClearBrowsingHistoryOnExit" /t REG_DWORD /d 1 /f
-	reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\MicrosoftEdge\Privacy" /v "ClearBrowsingHistoryOnExit" /t REG_DWORD /d 1 /f
+	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\MicrosoftEdge\Privacy" -Name "ClearBrowsingHistoryOnExit" -Value '1' -Type 'Dword'
+	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\MicrosoftEdge\Privacy" -Name "ClearBrowsingHistoryOnExit" -Value '1' -Type 'Dword'
 
 	# General - Disable help prompt in Edge UI.
-	reg add "HKEY_CURRENT_USER\Software\Policies\Microsoft\Windows\EdgeUI" /v "DisableHelpSticker" /t REG_DWORD /d 1 /f
-	reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\EdgeUI" /v "DisableHelpSticker" /t REG_DWORD /d 1 /f
+	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\Windows\EdgeUI" -Name "DisableHelpSticker" -Value '1' -Type 'Dword'
+	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\EdgeUI" -Name "DisableHelpSticker" -Value '1' -Type 'Dword'
 
 	# Privacy - Disable search suggestions in Edge.
-	reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\MicrosoftEdge\SearchScopes" /v "ShowSearchSuggestionsGlobal" /t REG_DWORD /d 0 /f
+	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\MicrosoftEdge\SearchScopes" -Name "ShowSearchSuggestionsGlobal" -Value '0' -Type 'Dword'
 
 	Write-Host "Done."
 }
 
 function IE_hardening(){
 	Write-Warning "Starting IE hardening..."
-
 	# Privacy - Disable Geolocation in Internet Explorer.
-	reg add "HKEY_CURRENT_USER\Software\Policies\Microsoft\Internet Explorer\Geolocation" /v "PolicyDisableGeolocation" /t REG_DWORD /d 1 /f
+	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\Internet Explorer\Geolocation" -Name "PolicyDisableGeolocation" -Type Dword -Value 1
 
 	# Security option - Enable Internet Explorer phising filter.
-	reg add "HKEY_CURRENT_USER\Software\Policies\Microsoft\Internet Explorer\PhishingFilter" /v "EnabledV9" /t REG_DWORD /d 1 /f
-	reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Internet Explorer\PhishingFilter" /v "EnabledV9" /t REG_DWORD /d 1 /f
+	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\Internet Explorer\PhishingFilter" -Name "EnabledV9" -Type Dword -Value 1
+	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Internet Explorer\PhishingFilter" -Name "EnabledV9" -Type Dword -Value 1
 
 	# Privacy option - Disable Internet Explorer phising filter.
-	# reg add "HKEY_CURRENT_USER\Software\Policies\Microsoft\Internet Explorer\PhishingFilter" /v "EnabledV9" /t REG_DWORD /d 0 /f
-	# reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Internet Explorer\PhishingFilter" /v "EnabledV9" /t REG_DWORD /d 0 /f
+	# Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\Internet Explorer\PhishingFilter" -Name "EnabledV9" -Type Dword -Value 0
+	# Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Internet Explorer\PhishingFilter" -Name "EnabledV9" -Type Dword -Value 0
 
 	# Privacy - Disable Internet Explorer InPrivate logging.
-	reg add "HKEY_CURRENT_USER\Software\Policies\Microsoft\Internet Explorer\Safety\PrivacIE" /v "DisableLogging" /t REG_DWORD /d 1 /f
-	reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Internet Explorer\Safety\PrivacIE" /v "DisableLogging" /t REG_DWORD /d 1 /f
+	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\Internet Explorer\Safety\PrivacIE" -Name "DisableLogging" -Type Dword -Value 1
+	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Internet Explorer\Safety\PrivacIE" -Name "DisableLogging" -Type Dword -Value 1
 
 	# Privacy - Disable Internet Explorer CEIP.
-	reg add "HKEY_CURRENT_USER\Software\Policies\Microsoft\Internet Explorer\SQM" /v "DisableCustomerImprovementProgram" /t REG_DWORD /d 0 /f
-	reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Internet Explorer\SQM" /v "DisableCustomerImprovementProgram" /t REG_DWORD /d 0 /f
+	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\Internet Explorer\SQM" -Name "DisableCustomerImprovementProgram" -Type Dword -Value 0
+	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Internet Explorer\SQM" -Name "DisableCustomerImprovementProgram" -Type Dword -Value 0
 
 	# Privacy - Disable enhanced, and other, suggestions.
-	reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Internet Explorer" /v "AllowServicePoweredQSA" /t REG_DWORD /d 0 /f
-	reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Internet Explorer\DomainSuggestion" /v "Enabled" /t REG_DWORD /d 0 /f
-	reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Internet Explorer\SearchScopes" /v "TopResult" /t REG_DWORD /d 0 /f
-	reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Internet Explorer\Suggested Sites" /v "Enabled" /t REG_DWORD /d 0 /f
-	reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Internet Explorer\Main" /v "AutoSearch" /t REG_DWORD /d 0 /f
-	reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Internet Explorer\Main\WindowsSearch" /v "EnabledScopes" /t REG_DWORD /d 0 /f
+	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Internet Explorer" -Name "AllowServicePoweredQSA" -Type Dword -Value 0
+	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Internet Explorer\DomainSuggestion" -Name "Enabled" -Type Dword -Value 0
+	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Internet Explorer\SearchScopes" -Name "TopResult" -Type Dword -Value 0
+	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Internet Explorer\Suggested Sites" -Name "Enabled" -Type Dword -Value 0
+	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Internet Explorer\Main" -Name "AutoSearch" -Type Dword -Value 0
+	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Internet Explorer\Main\WindowsSearch" -Name "EnabledScopes" -Type Dword -Value 0
 
 	# Privacy - Disable continuous browsing.
-	reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Internet Explorer\ContinuousBrowsing" /v "Enabled" /t REG_DWORD /d 0 /f
+	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Internet Explorer\ContinuousBrowsing" -Name "Enabled" -Type Dword -Value 0
 
 	# Security - Enable DEP and isolation in Internet Explorer.
-	reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Internet Explorer\Main" /v "DEPOff" /t REG_DWORD /d 0 /f
-	reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Internet Explorer\Main" /v "Isolation64Bit" /t REG_DWORD /d 1 /f
+	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Internet Explorer\Main" -Name "DEPOff" -Type Dword -Value 0
+	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Internet Explorer\Main" -Name "Isolation64Bit" -Type Dword -Value 1
 
 	# Privacy - Disable prefetching in Internet Explorer.
-	reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Internet Explorer\PrefetchPrerender" /v "Enabled" /t REG_DWORD /d 0 /f
+	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Internet Explorer\PrefetchPrerender" -Name "Enabled" -Type Dword -Value 0
 
 	# Privacy - Disable crash detection in Internet Explorer.
-	reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Internet Explorer\Restrictions" /v "NoCrashDetection" /t REG_DWORD /d 1 /f
+	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Internet Explorer\Restrictions" -Name "NoCrashDetection" -Type Dword -Value 1
 
 	# Privacy (optional) - Send the Do Not Track (DNT) request header in Internet Explorer.
-	# reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Internet Explorer\Main" /v "DoNotTrack" /t REG_DWORD /d 1 /f
+	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Internet Explorer\Main" -Name "DoNotTrack" -Type Dword -Value 1
 
 	# Privacy (optional) - Clear browsing history on exit in Internet Explorer.
-	# reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Internet Explorer\Privacy" /v "ClearBrowsingHistoryOnExit" /t REG_DWORD /d 1 /f
+	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Internet Explorer\Privacy" -Name "ClearBrowsingHistoryOnExit" -Type Dword -Value 1
 
     	# Security - Disable SSLv3 fallback, and the ability to ingore certificate errors, in Internet Explorer.
-	reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\CurrentVersion\Internet Settings" /v "CallLegacyWCMPolicies" /t REG_DWORD /d 0 /f
-	reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\CurrentVersion\Internet Settings" /v "EnableSSL3Fallback" /t REG_DWORD /d 0 /f
-	reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\CurrentVersion\Internet Settings" /v "PreventIgnoreCertErrors" /t REG_DWORD /d 1 /f
+	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\CurrentVersion\Internet Settings" -Name "CallLegacyWCMPolicies" -Type Dword -Value 0
+	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\CurrentVersion\Internet Settings" -Name "EnableSSL3Fallback" -Type Dword -Value 0
+	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\CurrentVersion\Internet Settings" -Name "PreventIgnoreCertErrors" -Type Dword -Value 1
 
 	# General - Force enabled HTTP/2 in Internet Explorer.
-	reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\CurrentVersion\Internet Settings" /v "EnableHTTP2" /t REG_DWORD /d 1 /f
+	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\CurrentVersion\Internet Settings" -Name "EnableHTTP2" -Type Dword -Value 1
 
 	Write-Host "Done."
 }
@@ -641,8 +643,8 @@ function Misc(){
 	# reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Biometrics" /v "Enabled" /t REG_DWORD /d 0 /f
 
 	Set-RegistryValue -Path 'Registry::HKLM\SOFTWARE\Policies\Microsoft\Internet Explorer\Main' -Name 'DisablePasswordReveal' -Value '1' -Type 'Dword'        # Disables password revea button
-	Set-RegistryValue -Path 'Registry::HKCU\Software\Policies\Microsoft\Windows\CredUI' -Name 'DisablePasswordReveal' -Value '1' -Type 'Dword'                # Disables password display button	
-	
+	Set-RegistryValue -Path 'Registry::HKCU\Software\Policies\Microsoft\Windows\CredUI' -Name 'DisablePasswordReveal' -Value '1' -Type 'Dword'                # Disables password display button
+
 
 	# Privacy & Security - Only download Windows Updates from LAN peers, and Microsoft servers.
 	reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\DeliveryOptimization" /v "DODownloadMode" /t REG_DWORD /d 1 /f
@@ -652,48 +654,48 @@ function Misc(){
 	Set-RegistryValue -Path 'Registry::HKLM\SOFTWARE\Policies\Microsoft\Windows\CloudContent' -Name 'RequirePinForPairing' -Value '1' -Type 'Dword' # Disables projecting (Connect) to the device and requires a pin for pairing
 	Set-RegistryValue -Path 'Registry::HKLM\SOFTWARE\Policies\Microsoft\WirelessDisplay' -Name 'EnforcePinBasedPairing' -Value '1' -Type 'Dword' # Disables projecting (Connect) to the device and requires a pin for pairing
 	Set-RegistryValue -Path 'Registry::HKCU\Software\Microsoft\Windows\CurrentVersion\Policies\PresentationSettings' -Name 'NoPresentationSettings' -Value '1' -Type 'Dword' # Disables projecting (Connect) to the device and requires a pin for pairing
-	
+
 	# Security - Disable Mobile Device Management (MDM) enrollment.
 	reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\CurrentVersion\MDM" /v "DisableRegistration" /t REG_DWORD /d 1 /f
-	
+
 	# Security - Force enable Data Execution Prevention (DEP).
 	reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\Explorer" /v "NoDataExecutionPrevention" /t REG_DWORD /d 0 /f
 	reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\System" /v "DisableHHDEP" /t REG_DWORD /d 0 /f
-	
+
 	# Security - Disable Autorun & AutoPlay
 	Set-RegistryValue -Path 'Registry::HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer' -Name 'NoAutorun' -Value '1' -Type 'Dword' # Disables Autorun
 	Set-RegistryValue -Path 'Registry::HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer' -Name 'NoDriveTypeAutoRun' -Value '255' -Type 'Dword' # Disables Autorun
 	Set-RegistryValue -Path 'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\AutoplayHandlers' -Name 'DisableAutoplay' -Value '1' -Type 'Dword' # Disables Autoplay
-	
+
 	# Security - Disable Active Desktop.
 	reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer" /v "ForceActiveDesktopOn" /t REG_DWORD /d 0 /f
 	reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer" /v "NoActiveDesktop" /t REG_DWORD /d 1 /f
 	reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer" /v "NoActiveDesktopChanges" /t REG_DWORD /d 1 /f
 	reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\ActiveDesktop" /v "NoAddingComponents" /t REG_DWORD /d 1 /f
 	reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\ActiveDesktop" /v "NoComponents" /t REG_DWORD /d 1 /f
-	
+
 	# Security - Disable desktop Gadgets.
 	reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Windows\Sidebar" /v "TurnOffSidebar" /t REG_DWORD /d 1 /f
 	reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Windows\Sidebar" /v "TurnOffUnsignedGadgets" /t REG_DWORD /d 1 /f
-	
+
 	# Security - Force process digital certificates when running executables.
 	reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\safer\codeidentifiers" /v "authenticodeenabled" /t REG_DWORD /d 1 /f
 	# Privacy option - Don't process digital certificates when running executables.
 	# reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\safer\codeidentifiers" /v "authenticodeenabled" /t REG_DWORD /d 0 /f
-    
+
 	# Security/Privacy (optional) Disable HomeGroup.
 	# reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\HomeGroup" /v "DisableHomeGroup" /t REG_DWORD /d 1 /f
-    
+
 	# Security - Disable pushing of apps for installation from the Windows store.
 	Set-RegistryValue -Path 'Registry::HKLM\SOFTWARE\Policies\Microsoft\PushToInstall' -Name 'DisablePushToInstall' -Value '1' -Type 'Dword' # Disables pushing of apps for installation from the Windows store
-    
+
 	# Security - Enable enhanced face spoofing protection.
 	reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Biometrics\FacialFeatures" /v "EnhancedAntiSpoofing" /t REG_DWORD /d 1 /f
-    
+
 	# Security - Disable Windows Update deferrals.
 	reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate" /v "DeferFeatureUpdates" /t REG_DWORD /d 0 /f
 	reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate" /v "DeferQualityUpdates" /t REG_DWORD /d 0 /f
-	
+
 	# Security option - Do not allow users and apps to connect to malicious websites.
 	reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows Defender\Windows Defender Exploit Guard\Network Protection" /v "EnableNetworkProtection" /t REG_DWORD /d 1 /f
 
@@ -875,51 +877,50 @@ function ConfigureWinDef(){
 
 	Write-Warning("Configuring Windows Defender..")
 	# Security option - Enable Windows Defender.
-	reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows Defender" /v "DisableAntiSpyware" /t REG_DWORD /d 0 /f
-	reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows Defender" /v "ServiceKeepAlive" /t REG_DWORD /d 1 /f
-	reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows Defender\Real-Time Protection" /v "DisableIOAVProtection" /t REG_DWORD /d 0 /f
-	reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows Defender\Real-Time Protection" /v "DisableRealtimeMonitoring" /t REG_DWORD /d 0 /f
-	reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows Defender\Scan" /v "CheckForSignaturesBeforeRunningScan" /t REG_DWORD /d 1 /f
-	reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows Defender\Scan" /v "DisableHeuristics" /t REG_DWORD /d 0 /f
-	reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Attachments" /v "ScanWithAntiVirus" /t REG_DWORD /d 3 /f
+	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender" -Name "DisableAntiSpyware" -Type Dword -Value 0
+	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender" -Name "ServiceKeepAlive" -Type Dword -Value 1
+	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Real-Time Protection" -Name "DisableIOAVProtection" -Type Dword -Value 0
+	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Real-Time Protection" -Name "DisableRealtimeMonitoring" -Type Dword -Value 0
+	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Scan" -Name "CheckForSignaturesBeforeRunningScan" -Type Dword -Value 1
+	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Scan" -Name "DisableHeuristics" -Type Dword -Value 0
+	Set-RegistryValue -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Attachments" -Name "ScanWithAntiVirus"-Type Dword -Value 3
 
 	# Privacy option - Disable Windows Defender.
-	# reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows Defender" /v "DisableAntiSpyware" /t REG_DWORD /d 1 /f
-	# reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows Defender" /v "ServiceKeepAlive" /t REG_DWORD /d 0 /f
-	# reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows Defender\Real-Time Protection" /v "DisableIOAVProtection" /t REG_DWORD /d 1 /f
-	# reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows Defender\Real-Time Protection" /v "DisableRealtimeMonitoring" /t REG_DWORD /d 1 /f
-	# reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows Defender\Scan" /v "DisableHeuristics" /t REG_DWORD /d 1 /f
+	# Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender" -Name "DisableAntiSpyware" -Type Dword -Value 1
+	# Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender" -Name "ServiceKeepAlive" -Type Dword -Value 0
+	# Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Real-Time Protection" -Name "DisableIOAVProtection" -Type Dword -Value 1
+	# Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Real-Time Protection" -Name "DisableRealtimeMonitoring" -Type Dword -Value 1
+	# Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Scan" -Name "DisableHeuristics" -Type Dword -Value 1
 
 	# Privacy - Configure Windows Defender.
-	reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows Defender\Real-Time Protection" /v "DisableBehaviorMonitoring" /t REG_DWORD /d 1 /f
-	reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows Defender\Reporting" /v "DisableGenericRePorts" /t REG_DWORD /d 1 /f
+	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Real-Time Protection" -Name "DisableBehaviorMonitoring" -Type Dword -Value 1
+	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Reporting" -Name "DisableGenericRePorts" -Type Dword -Value 1
 	# This one raises an alarm on Windows Defender -- keep it at 0!
-	# reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows Defender\Spynet" /v "DisableBlockAtFirstSeen" /t REG_DWORD /d 1 /f
-	reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows Defender\Spynet" /v "LocalSettingOverrideSpynetReporting" /t REG_DWORD /d 0 /f
-	reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows Defender\Spynet" /v "SpynetReporting" /t REG_DWORD /d 0 /f
-	reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows Defender\Spynet" /v "SubmitSamplesConsent" /t REG_DWORD /d 2 /f
+	# Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Spynet" -Name "DisableBlockAtFirstSeen" -Type Dword -Value 1
+	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Spynet" -Name "LocalSettingOverrideSpynetReporting" -Type Dword -Value 0
+	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Spynet" -Name "SpynetReporting" -Type Dword -Value 0
+	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Spynet" -Name "SubmitSamplesConsent" -Type Dword -Value 2
 	Write-Host("Done.")
 }
 
 function ExplorerStuffs(){
-
 	# General - Hide "People" bar in File Explorer.
-	reg add "HKEY_CURRENT_USER\Software\Policies\Microsoft\Windows\Explorer" /v "HidePeopleBar" /t REG_DWORD /d 1 /f
+	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\Windows\Explorer" -Name "HidePeopleBar" -Type Dword -Value 1
 	# Privacy - Disable online content in Explorer.
-	reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer" /v "AllowOnlineTips" /t REG_DWORD /d 0 /f
-	reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer" /v "NoInternetOpenWith" /t REG_DWORD /d 1 /f
-	reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer" /v "NoOnlinePrintsWizard" /t REG_DWORD /d 1 /f
-	reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer" /v "NoPublishingWizard" /t REG_DWORD /d 1 /f
-	reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer" /v "NoWebServices" /t REG_DWORD /d 1 /f
+	Set-RegistryValue -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer" -Name "AllowOnlineTips" -Type Dword -Value 0
+	Set-RegistryValue -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer" -Name "NoInternetOpenWith" -Type Dword -Value 1
+	Set-RegistryValue -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer" -Name "NoOnlinePrintsWizard" -Type Dword -Value 1
+	Set-RegistryValue -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer" -Name "NoPublishingWizard" -Type Dword -Value 1
+	Set-RegistryValue -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer" -Name "NoWebServices" -Type Dword -Value 1
 	# Privacy - Disable recent documents in Explorer.
-	reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer" /v "NoRecentDocsHistory" /t REG_DWORD /d 1 /f
-	reg add "HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer" /v "ClearRecentDocsOnExit" /t REG_DWORD /d 1 /f
+	Set-RegistryValue -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer" -Name "NoRecentDocsHistory" -Type Dword -Value 1
+	Set-RegistryValue -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer" -Name "ClearRecentDocsOnExit" -Type Dword -Value 1
 	# Privacy - Do not show recently or frequently accessed files in Quick access (Explorer).
-	reg add "HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer" /v "ShowFrequent" /t REG_DWORD /d 0 /f
-	reg add "HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer" /v "ShowRecent" /t REG_DWORD /d 0 /f
+	Set-RegistryValue -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer" -Name "ShowFrequent" -Type Dword -Value 0
+	Set-RegistryValue -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer" -Name "ShowRecent" -Type Dword -Value 0
 	# Security - Do not hide extensions for know file types.
-	Set-RegistryValue -Path 'Registry::HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced' -Name 'HideFileExt' -Value '0'  -Type 'Dword'  # Displays file extensions
-	Set-RegistryValue -Path 'Registry::HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced' -Name 'SharingWizardOn' -Value '0' -Type 'Dword' # Disables Sharing Wizard
+	Set-RegistryValue -Path 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced' -Name 'HideFileExt' -Value '0'  -Type 'Dword'  # Displays file extensions
+	Set-RegistryValue -Path 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced' -Name 'SharingWizardOn' -Value '0' -Type 'Dword' # Disables Sharing Wizard
 }
 
 function FirewallHardening(){
@@ -1048,20 +1049,13 @@ function DisableStickyKeys{
 # Import required modules
 Import-Module ".\Utils.psm1"
 
-
-# Set UAC Level to High
-Write-Warning 'Setting UAC level to High...'
-# Custom script that set the UAC level to the maximum value
-Set-UACLevel 3
-Write-Host 'Done.'
-
-
 # Remove Unneeded Apps
 RemoveApps
 # Stop and Disable Unneeded Services
 DisableServices
 # Scheduled Tasks Hardening
 DisableScheduledTasks
+
 # Disable WiFi-Sense
 DisableWiFiSense
 # Disable Telemetry
@@ -1092,40 +1086,47 @@ ExplorerStuffs
 # Mixed Privacy & Security Features
 Misc
 
+# Disable the SMB Server
+DisableSMBServer
+# Disable Sharing MappedDrives
+DisableSharingMappedDrives
+# Disable any Admin Share
+DisableAdminShares
+# Disable the LLMNR Protocol
+DisableLLMNR
+# Disable NetBios
+DisableNetBios
+
 # Flush caches
 FlushCaches
 # Windows Firewall hardening
 FirewallHardening
 # Disable unneeded network connections
 DisableNetworks
-# Disable unsecure network security protocols
-DisableProtocols
-# Enable TLS 1.2
-EnableTLS1_2
-# Disable the LLMNR Protocol
-DisableLLMNR
-# Disable NetBios
-DisableNetBios
-# Disable Sharing MappedDrives
-DisableSharingMappedDrives
-# Disable any Admin Share
-DisableAdminShares
-# Disable the SMB Server
-DisableSMBServer
+# Disable unsafe network security protocols and enable TLS 1.2
+DisableNetSecProtocols
 
 
-# Sets user password restrictions
+
+# Set user password restrictions
 SetPasswordPolicy
 # Set login screen MOTD
 SetLoginMOTD
-
 # Enforce Exploit Mitigation settings (System-level only)
-Set-ProcessMitigation -System -Enable DEP, CFG, ForceRelocateImages, BottomUp, SEHOP, TerminateOnError, HighEntropy
-
+# Set-ProcessMitigation -System -Enable DEP, CFG, BottomUp, SEHOP, TerminateOnError, HighEntropy, ForceRelocateImages
+# Enable Memory Integrity -- Core Isolation Win10
+Set-RegistryValue -Path "HKLM:\SYSTEM\CurrentControlSet\Control\DeviceGuard\Scenarios\HypervisorEnforcedCodeIntegrity" -Name "Enabled" -Value 1 -Type Dword
 # Enable and Configure Windows Defender
 if(!$NoAV){
     ConfigureWinDef
 }
+# Set UAC Level to High
+Write-Warning 'Setting UAC level to High...'
+# Set the UAC level to the maximum value
+Set-UACLevel 3
+Write-Host 'Done.'
+
+
 
 # Restart the device
 Write-Warning 'Hardening has finished successfully. Would you like to restart now?'
