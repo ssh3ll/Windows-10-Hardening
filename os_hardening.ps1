@@ -219,7 +219,7 @@ function DisableServices(){
 	Write-Warning 'Disabling Unneeded Windows services...'
 	[Array]$Services =
 		'lmhosts', # TCP/IP NetBIOS Helper
-		'wlidsvc', # Microsoft Account Sign-in Assistant
+		#'wlidsvc', # Microsoft Account Sign-in Assistant
 		'SEMgrSvc', # Payments NFC/SE Manager
 		'tzautoupdate', # Auto Time Zone Updater
 		'AppVClient', # Microsoft App-V Client
