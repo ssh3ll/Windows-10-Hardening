@@ -16,6 +16,9 @@ function RemoveApps(){
 		'Microsoft.BingSports',
 		'Microsoft.BingTranslator',
 		'Microsoft.BingWeather',
+        'Microsoft.BingFoodAndDrink',
+		'Microsoft.BingTravel',
+		'Microsoft.BingHealthAndFitness',
 		'Microsoft.FreshPaint',
 		'Microsoft.MicrosoftOfficeHub',
 		'Microsoft.WindowsFeedbackHub',
@@ -49,9 +52,6 @@ function RemoveApps(){
 		'Microsoft.Office.Sway',
 		'Microsoft.OneConnect',
 		'Microsoft.Microsoft3DViewer',
-		'Microsoft.BingFoodAndDrink',
-		'Microsoft.BingTravel',
-		'Microsoft.BingHealthAndFitness',
 		'Microsoft.WindowsReadingList',
 		'9E2F88E3.Twitter',
 		'PandoraMediaInc.29680B314EFC2',
@@ -1115,7 +1115,8 @@ SetLoginMOTD
 # Enforce Exploit Mitigation settings (System-level only)
 # Set-ProcessMitigation -System -Enable DEP, CFG, BottomUp, SEHOP, TerminateOnError, HighEntropy, ForceRelocateImages
 # Enable Memory Integrity -- Core Isolation Win10
-Set-RegistryValue -Path "HKLM:\SYSTEM\CurrentControlSet\Control\DeviceGuard\Scenarios\HypervisorEnforcedCodeIntegrity" -Name "Enabled" -Value 1 -Type Dword
+#Set-RegistryValue -Path "HKLM:\SYSTEM\CurrentControlSet\Control\DeviceGuard\Scenarios\HypervisorEnforcedCodeIntegrity" -Name "Enabled" -Value 1 -Type Dword
+
 # Enable and Configure Windows Defender
 if(!$NoAV){
     ConfigureWinDef
