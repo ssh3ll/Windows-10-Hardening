@@ -1049,6 +1049,17 @@ function DisableStickyKeys{
 # Import required modules
 Import-Module ".\Utils.psm1"
 
+
+# Registry Hives Backup
+Write-Host("Backing up registry hives..")
+$regBckpDir = "RegistryBackup"
+New-Item -ItemType Directory -Force -Path $regBckpDir
+Remove-Item -Path $regBckpDir\* 
+reg export HKLM $regBckpDir\hklm.reg
+reg export HKCU $regBckpDir\hkcu.reg
+reg export HKCR $regBckpDir\hkcr.reg
+Write-Host("Done.")
+
 # Remove Unneeded Apps
 RemoveApps
 # Stop and Disable Unneeded Services
