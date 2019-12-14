@@ -16,6 +16,9 @@ function RemoveApps(){
 		'Microsoft.BingSports',
 		'Microsoft.BingTranslator',
 		'Microsoft.BingWeather',
+		'Microsoft.BingFoodAndDrink',
+		'Microsoft.BingTravel',
+		'Microsoft.BingHealthAndFitness',
 		'Microsoft.FreshPaint',
 		'Microsoft.MicrosoftOfficeHub',
 		'Microsoft.WindowsFeedbackHub',
@@ -49,9 +52,6 @@ function RemoveApps(){
 		'Microsoft.Office.Sway',
 		'Microsoft.OneConnect',
 		'Microsoft.Microsoft3DViewer',
-		'Microsoft.BingFoodAndDrink',
-		'Microsoft.BingTravel',
-		'Microsoft.BingHealthAndFitness',
 		'Microsoft.WindowsReadingList',
 		'9E2F88E3.Twitter',
 		'PandoraMediaInc.29680B314EFC2',
@@ -92,6 +92,7 @@ function RemoveApps(){
 	}
 	Write-Host 'Done.'
 }
+
 # Disable NetBios
 function DisableNetBios {
 	Write-Warning("Disabling NetBios..")
@@ -308,7 +309,9 @@ function DisableServices(){
 		'ShellHWDetection', # Shell Hardware Detection
 		'SSDPSRV', # SSDP Discovery
 		'WbioSrvc', # Windows Biometric Service
-		'stisvc' # Windows Image Acquisition (WIA)
+		'stisvc', # Windows Image Acquisition (WIA)
+		'MessagingService', # Instant messaging Universal Windows Platform Service
+		'PcaSvc' # Program Compatibility Assistant (PCA)
 	Foreach ($Service in $Services) {
 		Set-Service -Name $Service -StartupType 'Disabled'
 		Stop-Service -Name $Service -Force
@@ -417,28 +420,57 @@ function DisableWiFiSense(){
 
 function DisableScheduledTasks(){
 	Write-Warning "Disabling unneeded scheduled tasks"
-	# Privacy - Disable telemetry scheduled tasks.
+
 	# Disable Customer Experience Improvement Program (CEIP) tasks.
-	schtasks /change /tn "\Microsoft\Windows\Autochk\Proxy" /disable
-	schtasks /change /tn "\Microsoft\Windows\Customer Experience Improvement Program\Consolidator" /disable
-	schtasks /change /tn "\Microsoft\Windows\Customer Experience Improvement Program\KernelCeipTask" /disable
-	schtasks /change /tn "\Microsoft\Windows\Customer Experience Improvement Program\UsbCeip" /disable
-	schtasks /change /tn "\Microsoft\Windows\DiskDiagnostic\Microsoft-Windows-DiskDiagnosticDataCollector" /disable
-	schtasks /change /tn "\Microsoft\Windows\PI\Sqm-Tasks" /disable
+	Disable-ScheduledTask -TaskName "\Microsoft\Windows\Autochk\Proxy" | Out-Null
+	Disable-ScheduledTask -TaskName "\Microsoft\Windows\Customer Experience Improvement Program\Consolidator" | Out-Null
+	Disable-ScheduledTask -TaskName "\Microsoft\Windows\Customer Experience Improvement Program\KernelCeipTask" | Out-Null
+	Disable-ScheduledTask -TaskName "\Microsoft\Windows\Customer Experience Improvement Program\UsbCeip" | Out-Null
+	Disable-ScheduledTask -TaskName "\Microsoft\Windows\DiskDiagnostic\Microsoft-Windows-DiskDiagnosticDataCollector" | Out-Null
+	Disable-ScheduledTask -TaskName "\Microsoft\Windows\PI\Sqm-Tasks" | Out-Null
+	
 
 	# Disable setting sync tasks.
-	schtasks /change /tn "\Microsoft\Windows\SettingSync\BackgroundUploadTask" /disable
-	schtasks /change /tn "\Microsoft\Windows\SettingSync\BackupTask" /disable
-	schtasks /change /tn "\Microsoft\Windows\SettingSync\NetworkStateChangeTask" /disable
+	Disable-ScheduledTask -TaskName "\Microsoft\Windows\SettingSync\BackgroundUploadTask" | Out-Null
+	Disable-ScheduledTask -TaskName "\Microsoft\Windows\SettingSync\BackupTask" | Out-Null
+	Disable-ScheduledTask -TaskName "\Microsoft\Windows\SettingSync\NetworkStateChangeTask" | Out-Null
+
 
 	# Disable Windows Error Reporting task.
-	schtasks /change /tn "\Microsoft\Windows\Windows Error Reporting\QueueReporting" /disable
+	Disable-ScheduledTask -TaskName "\Microsoft\Windows\Windows Error Reporting\QueueReporting" | Out-Null
 
 	# Disable Office subscription heartbeat task.
-	schtasks /change /tn "\Microsoft\Office\Office 15 Subscription Heartbeat" /disable
+	Disable-ScheduledTask -TaskName "\Microsoft\Office\Office 15 Subscription Heartbeat" | Out-Null
 
-	# Optional - Disable SmartScreen data collection task.
-	schtasks /change /tn "\Microsoft\Windows\AppID\SmartScreenSpecific" /disable
+	# Disable SmartScreen data collection task.
+	Disable-ScheduledTask -TaskName "\Microsoft\Windows\AppID\SmartScreenSpecific" | Out-Null
+	
+	Disable-ScheduledTask -TaskName "\Microsoft\Windows\Application Experience\AitAgent" | Out-Null
+	Disable-ScheduledTask -TaskName "\Microsoft\Windows\CloudExperienceHost\CreateObjectTask" | Out-Null
+	Disable-ScheduledTask -TaskName "\Microsoft\Windows\Customer Experience Improvement Program\BthSQM" | Out-Null
+	Disable-ScheduledTask -TaskName "\Microsoft\Windows\Customer Experience Improvement Program\Uploader" | Out-Null
+	Disable-ScheduledTask -TaskName "\Microsoft\Windows\DiskFootprint\Diagnostics" | Out-Null
+	Disable-ScheduledTask -TaskName "\Microsoft\Windows\Maintenance\WinSAT" | Out-Null
+	Disable-ScheduledTask -TaskName "\Microsoft\Windows\PI\Sqm-Tasks" | Out-Null
+	Disable-ScheduledTask -TaskName "\Microsoft\Windows\Power Efficiency Diagnostics\AnalyzeSystem" | Out-Null
+	Disable-ScheduledTask -TaskName "\Microsoft\Windows\Shell\FamilySafetyMonitor" | Out-Null
+	Disable-ScheduledTask -TaskName "\Microsoft\Windows\Shell\FamilySafetyRefresh" | Out-Null
+	Disable-ScheduledTask -TaskName "\Microsoft\Windows\Shell\FamilySafetyUpload" | Out-Null
+	Disable-ScheduledTask -TaskName "\Microsoft\Windows\Shell\FamilySafetyMonitor" | Out-Null
+	Disable-ScheduledTask -TaskName "\Microsoft\Windows\Shell\FamilySafetyMonitorToastTask" | Out-Null
+	Disable-ScheduledTask -TaskName "\Microsoft\Windows\Shell\FamilySafetyRefreshTask" | Out-Null
+	Disable-ScheduledTask -TaskName "\Microsoft\Windows\WindowsUpdate\Automatic App Update" | Out-Null
+	Disable-ScheduledTask -TaskName "\Microsoft\Windows\License Manager\TempSignedLicenseExchange" | Out-Null
+	Disable-ScheduledTask -TaskName "\Microsoft\Windows\Clip\License Validation" | Out-Null
+
+	Disable-ScheduledTask -TaskName "\Microsoft\Windows\ApplicationData\DsSvcCleanup" | Out-Null
+	Disable-ScheduledTask -TaskName "\Microsoft\Windows\Power Efficiency Diagnostics\AnalyzeSystem" | Out-Null
+	Disable-ScheduledTask -TaskName "\Microsoft\Windows\PushToInstall\LoginCheck" | Out-Null
+
+	Disable-ScheduledTask -TaskName "\Microsoft\Windows\Diagnosis\RecommendedTroubleshootingScanner" | Out-Null
+	Disable-ScheduledTask -TaskName "\Microsoft\Windows\Diagnosis\Scheduled" | Out-Null
+	Disable-ScheduledTask -TaskName "\Microsoft\Windows\NetTrace\GatherNetworkInfo" | Out-Null
+    
 	Write-Host "Done."
 }
 
@@ -1017,6 +1049,23 @@ function SetLoginMOTD{
 	}
 }
 
+function DisableSysRestore{
+	$confirm = Read-Host("Disable System Restore? [y/N]")
+	
+	if ( ("y", "yes") -contains $confirm){
+		vssadmin delete shadows /all /Quiet |Out-Null
+		Write-Host("shadow copies deleted")
+        
+		Set-RegistryValue -Path 'HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\SystemRestore' -Name 'DisableConfig' -Value '1' -Type 'Dword'
+		Set-RegistryValue -Path 'HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\SystemRestore' -Name 'DisableSR' -Value '1' -Type 'Dword'
+		Set-RegistryValue -Path 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\SystemRestore' -Name 'DisableConfig' -Value '1' -Type 'Dword'
+		Set-RegistryValue -Path 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\SystemRestore' -Name 'DisableSR' -Value '1' -Type 'Dword'
+		
+		Disable-ScheduledTask -TaskName "\Microsoft\Windows\SystemRestore\SR"
+		Write-Host("`nSystem Restore Disabled")
+	}
+}
+
 function SetPasswordPolicy{
 	$confirm = Read-Host("Would you like to set a password policy? [Y\n]")
 	if ( ("y", "yes", "") -contains $confirm){
@@ -1048,6 +1097,22 @@ function DisableStickyKeys{
 
 # Import required modules
 Import-Module ".\Utils.psm1"
+
+
+# Registry Hives Backup
+Write-Host("Backing up registry hives..")
+$regBckpDir = "RegistryBackup"
+New-Item -ItemType Directory -Force -Path $regBckpDir
+Remove-Item -Path $regBckpDir\* 
+reg export HKLM $regBckpDir\hklm.reg
+reg export HKCU $regBckpDir\hkcu.reg
+reg export HKCR $regBckpDir\hkcr.reg
+Write-Host("Done.")
+
+
+# Disable System Restore
+DisableSysRestore
+
 
 # Remove Unneeded Apps
 RemoveApps
@@ -1115,7 +1180,8 @@ SetLoginMOTD
 # Enforce Exploit Mitigation settings (System-level only)
 # Set-ProcessMitigation -System -Enable DEP, CFG, BottomUp, SEHOP, TerminateOnError, HighEntropy, ForceRelocateImages
 # Enable Memory Integrity -- Core Isolation Win10
-Set-RegistryValue -Path "HKLM:\SYSTEM\CurrentControlSet\Control\DeviceGuard\Scenarios\HypervisorEnforcedCodeIntegrity" -Name "Enabled" -Value 1 -Type Dword
+#Set-RegistryValue -Path "HKLM:\SYSTEM\CurrentControlSet\Control\DeviceGuard\Scenarios\HypervisorEnforcedCodeIntegrity" -Name "Enabled" -Value 1 -Type Dword
+
 # Enable and Configure Windows Defender
 if(!$NoAV){
     ConfigureWinDef
