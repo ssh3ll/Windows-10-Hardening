@@ -16,7 +16,7 @@ function RemoveApps(){
 		'Microsoft.BingSports',
 		'Microsoft.BingTranslator',
 		'Microsoft.BingWeather',
-        'Microsoft.BingFoodAndDrink',
+		'Microsoft.BingFoodAndDrink',
 		'Microsoft.BingTravel',
 		'Microsoft.BingHealthAndFitness',
 		'Microsoft.FreshPaint',
@@ -1017,6 +1017,23 @@ function SetLoginMOTD{
 	}
 }
 
+function DisableSysRestore{
+	$confirm = Read-Host("Disable System Restore? [y/N]")
+	
+	if ( ("y", "yes") -contains $confirm){
+		vssadmin delete shadows /all /Quiet
+		Write-Host("shadow copies deleted")
+        
+		Set-RegistryValue -Path 'HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\SystemRestore' -Name 'DisableConfig' -Value '1' -Type 'Dword'
+		Set-RegistryValue -Path 'HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\SystemRestore' -Name 'DisableSR' -Value '1' -Type 'Dword'
+		Set-RegistryValue -Path 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\SystemRestore' -Name 'DisableConfig' -Value '1' -Type 'Dword'
+		Set-RegistryValue -Path 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\SystemRestore' -Name 'DisableSR' -Value '1' -Type 'Dword'
+		
+		Disable-ScheduledTask -TaskName "\Microsoft\Windows\SystemRestore\SR"
+		Write-Host("`nSystem Restore Disabled")
+	}
+}
+
 function SetPasswordPolicy{
 	$confirm = Read-Host("Would you like to set a password policy? [Y\n]")
 	if ( ("y", "yes", "") -contains $confirm){
@@ -1059,6 +1076,11 @@ reg export HKLM $regBckpDir\hklm.reg
 reg export HKCU $regBckpDir\hkcu.reg
 reg export HKCR $regBckpDir\hkcr.reg
 Write-Host("Done.")
+
+
+# Disable System Restore
+DisableSysRestore
+
 
 # Remove Unneeded Apps
 RemoveApps
