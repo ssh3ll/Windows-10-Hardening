@@ -309,7 +309,9 @@ function DisableServices(){
 		'ShellHWDetection', # Shell Hardware Detection
 		'SSDPSRV', # SSDP Discovery
 		'WbioSrvc', # Windows Biometric Service
-		'stisvc' # Windows Image Acquisition (WIA)
+		'stisvc', # Windows Image Acquisition (WIA)
+		'MessagingService', # Instant messaging Universal Windows Platform Service
+		'PcaSvc' # Program Compatibility Assistant (PCA)
 	Foreach ($Service in $Services) {
 		Set-Service -Name $Service -StartupType 'Disabled'
 		Stop-Service -Name $Service -Force
@@ -468,10 +470,6 @@ function DisableScheduledTasks(){
 	Disable-ScheduledTask -TaskName "\Microsoft\Windows\Diagnosis\RecommendedTroubleshootingScanner" | Out-Null
 	Disable-ScheduledTask -TaskName "\Microsoft\Windows\Diagnosis\Scheduled" | Out-Null
 	Disable-ScheduledTask -TaskName "\Microsoft\Windows\NetTrace\GatherNetworkInfo" | Out-Null
-
-
-
-    
     
 	Write-Host "Done."
 }
