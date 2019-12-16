@@ -51,7 +51,6 @@ function RemoveApps(){
 		'Microsoft.Messaging',
 		'Microsoft.Office.Sway',
 		'Microsoft.OneConnect',
-		'Microsoft.Microsoft3DViewer',
 		'Microsoft.WindowsReadingList',
 		'9E2F88E3.Twitter',
 		'PandoraMediaInc.29680B314EFC2',
