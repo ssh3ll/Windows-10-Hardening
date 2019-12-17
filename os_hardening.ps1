@@ -561,17 +561,19 @@ function RDP_hardening(){
 	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services" -Name "DisablePasswordSaving" -Type Dword -Value 1
 	
 	# Prevent the client to run signed and unsigned .rdp files
+	<#
 	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\Windows NT\Terminal Services" -Name "AllowSignedFiles" -Type Dword -Value 0
 	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\Windows NT\Terminal Services" -Name "AllowUnsignedFiles" -Type Dword -Value 0
 	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services" -Name "AllowSignedFiles" -Type Dword -Value 0
 	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services" -Name "AllowUnsignedFiles"-Type Dword -Value 0
-	
+	#>
 
 	# Only connect to same version or higher
 	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services" -Name "CreateEncryptedOnlyTickets" -Type Dword -Value 1
 	
 	# Do not allow Remote Shell Access
 	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WinRM\Service\WinRS" -Name "AllowRemoteShellAccess" -Type Dword -Value 0
+
 	# Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\WindowsFirewall\StandardProfile\RemoteAdminSettings" -Name "Enabled" -Type Dword -Value 0
 	# Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\WindowsFirewall\StandardProfile\Services\RemoteDesktop" -Name "Enabled" -Type Dword -Value 0
 	# Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\WindowsFirewall\StandardProfile\Services\UPnPFramework" -Name "Enabled" -Type Dword -Value 0
