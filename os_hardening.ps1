@@ -85,6 +85,8 @@ function RemoveApps(){
 		'WinZipComputing.WinZipUniversal',
 		'Microsoft.ScreenSketch',
 		'Microsoft.XboxGamingOverlay',
+		'Microsoft.Xbox.TCUI',
+		'Microsoft.XboxGameCallableUI',
 		'Microsoft.YourPhone'
 	Foreach ($App in $Apps) {
 		Get-AppxPackage $App | Remove-AppxPackage -AllUsers -ErrorAction 'SilentlyContinue'
@@ -687,7 +689,7 @@ function Misc(){
 	# General (optional) - Disable Biometrics.
 	# reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Biometrics" /v "Enabled" /t REG_DWORD /d 0 /f
 
-	Set-RegistryValue -Path 'Registry::HKLM\SOFTWARE\Policies\Microsoft\Internet Explorer\Main' -Name 'DisablePasswordReveal' -Value '1' -Type 'Dword'        # Disables password revea button
+	Set-RegistryValue -Path 'Registry::HKLM\SOFTWARE\Policies\Microsoft\Internet Explorer\Main' -Name 'DisablePasswordReveal' -Value '1' -Type 'Dword'        # Disables password reveal button
 	Set-RegistryValue -Path 'Registry::HKCU\Software\Policies\Microsoft\Windows\CredUI' -Name 'DisablePasswordReveal' -Value '1' -Type 'Dword'                # Disables password display button
 
 
