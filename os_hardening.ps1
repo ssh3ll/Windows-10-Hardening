@@ -373,10 +373,10 @@ function DisableNetSecProtocols(){
 
 function DisableNetworks(){
 	Write-Warning 'Disabling unnecessary network connections...'
+	
 	netsh Interface IPv4 Set Global mldlevel=none # Disables IGMPLevel
 	Set-RegistryValue -Path 'HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip6\Parameters' -Name 'DisabledComponents' -Value '0xFF' -Type 'Dword' # Disables IPv6 completely
-	Set-RegistryValue -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Remote Assistance' -Name 'fAllowToGetHelp' -Value '0' -Type 'Dword' # Disables Remote Assistance
-	Set-RegistryValue -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Terminal Server' -Name 'fDenyTSConnections' -Value '1' -Type 'Dword' # Disables Remote Desktop
+
 	# Get-NetAdapter -Name '*' | Set-DNSClient -Interface $_ -RegisterThisConnectionsAddress $FALSE # Disables 'Register this connection's addresses in DNS'
 	Disable-NetAdapterBinding -Name '*' -ComponentID 'ms_lldp' # Microsoft LLDP Protocol Driver
 	Disable-NetAdapterBinding -Name '*' -ComponentID 'ms_implat' # Microsoft Network Adapter Multiplexor Protocol
@@ -477,6 +477,59 @@ function DisableScheduledTasks(){
 
 function Office_hardening(){
 	Write-Warning "Starting Office hardening"
+
+	# Blocks macros and other content execution (both Office 2016 and Office 2013)
+	# TODO set only the required registry key values
+	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\16.0\access\security' -Name 'vbawarnings' -Type Dword -Value 4    
+	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\16.0\excel\security' -Name 'vbawarnings' -Value '4' -Type 'Dword' 
+	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\16.0\excel\security' -Name 'blockcontentexecutionfrominternet' -Value '1' -Type 'Dword' 
+	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\16.0\excel\security' -Name 'excelbypassencryptedmacroscan' -Value '0' -Type 'Dword' 
+	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\16.0\ms project\security' -Name 'vbawarnings' -Value '4' -Type 'Dword' 
+	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\16.0\ms project\security' -Name 'level' -Value '4' -Type 'Dword'  
+	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\16.0\outlook\security' -Name 'level' -Value '4' -Type 'Dword' 
+	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\16.0\powerpoint\security' -Name 'vbawarnings' -Value '4' -Type 'Dword'  
+	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\16.0\powerpoint\security' -Name 'blockcontentexecutionfrominternet' -Value '1' -Type 'Dword'  
+	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\16.0\publisher\security' -Name 'vbawarnings' -Value '4' -Type 'Dword'  
+	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\16.0\visio\security' -Name 'vbawarnings' -Value '4' -Type 'Dword' 
+	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\16.0\visio\security' -Name 'blockcontentexecutionfrominternet' -Value '1' -Type 'Dword' 
+	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\16.0\word\security' -Name 'vbawarnings' -Value '4' -Type 'Dword' 
+	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\16.0\word\security' -Name 'blockcontentexecutionfrominternet' -Value '1' -Type 'Dword' 
+	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\16.0\word\security' -Name 'wordbypassencryptedmacroscan' -Value '0' -Type 'Dword' 
+	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\common\security' -Name 'automationsecurity' -Value '3' -Type 'Dword'
+	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\16.0\outlook\options\mail' -Name 'blockextcontent' -Value '1' -Type 'Dword' 
+	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\16.0\outlook\options\mail' -Name 'junkmailenablelinks' -Value '0' -Type 'Dword' 
+
+	
+	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\15.0\excel\security' -Name 'vbawarnings' -Value '4' -Type 'Dword' 
+	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\15.0\excel\security' -Name 'blockcontentexecutionfrominternet' -Value '1' -Type 'Dword' 
+	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\15.0\excel\security' -Name 'excelbypassencryptedmacroscan' -Value '0' -Type 'Dword' 
+	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\15.0\ms project\security' -Name 'vbawarnings' -Value '4' -Type 'Dword' 
+	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\15.0\ms project\security' -Name 'level' -Value '4' -Type 'Dword'  
+	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\15.0\outlook\security' -Name 'level' -Value '4' -Type 'Dword' 
+	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\15.0\powerpoint\security' -Name 'vbawarnings' -Value '4' -Type 'Dword'  
+	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\15.0\powerpoint\security' -Name 'blockcontentexecutionfrominternet' -Value '1' -Type 'Dword'  
+	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\15.0\publisher\security' -Name 'vbawarnings' -Value '4' -Type 'Dword'  
+	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\15.0\word\security' -Name 'vbawarnings' -Value '4' -Type 'Dword' 
+	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\15.0\word\security' -Name 'blockcontentexecutionfrominternet' -Value '1' -Type 'Dword' 
+	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\15.0\word\security' -Name 'wordbypassencryptedmacroscan' -Value '0' -Type 'Dword' 
+	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\common\security' -Name 'automationsecurity' -Value '3' -Type 'Dword'
+
+	# Disable DDE Execution (TODO Excel 2016, 2013, 2010, 2007 - Outlook 2016, 2013, 2010, 2007 - Word 2016, 2013, 2010, 2007...)
+	Set-RegistryValue -Path 'HKCU:\Software\Microsoft\office\12.0\Excel\Security' -Name 'WorkbookLinkWarnings' -Value '2' -Type 'Dword'
+	Set-RegistryValue -Path 'HKCU:\Software\Microsoft\office\14.0\Excel\Security' -Name 'WorkbookLinkWarnings' -Value '2' -Type 'Dword'
+	Set-RegistryValue -Path 'HKCU:\Software\Microsoft\office\15.0\Excel\Security' -Name 'WorkbookLinkWarnings' -Value '2' -Type 'Dword'
+	Set-RegistryValue -Path 'HKCU:\Software\Microsoft\office\16.0\Excel\Security' -Name 'WorkbookLinkWarnings' -Value '2' -Type 'Dword'
+
+	Set-RegistryValue -Path 'HKCU:\Software\Microsoft\Office\14.0\Word\Options\WordMail' -Name 'DontUpdateLinks' -Value '1' -Type 'Dword'
+	Set-RegistryValue -Path 'HKCU:\Software\Microsoft\Office\15.0\Word\Options\WordMail' -Name 'DontUpdateLinks' -Value '1' -Type 'Dword'
+	Set-RegistryValue -Path 'HKCU:\Software\Microsoft\Office\16.0\Word\Options\WordMail' -Name 'DontUpdateLinks' -Value '1' -Type 'Dword'
+	Set-RegistryValue -Path 'HKCU:\Software\Microsoft\Office\12.0\Word\Options\vpref' -Name 'fNoCalclinksOnopen_90_1' -Value '1' -Type 'Dword'
+
+	Set-RegistryValue -Path 'HKCU:\Software\Microsoft\Office\14.0\Word\Options' -Name 'DontUpdateLinks' -Value '1' -Type 'Dword'
+	Set-RegistryValue -Path 'HKCU:\Software\Microsoft\Office\15.0\Word\Options' -Name 'DontUpdateLinks' -Value '1' -Type 'Dword'
+	Set-RegistryValue -Path 'HKCU:\Software\Microsoft\Office\16.0\Word\Options' -Name 'DontUpdateLinks' -Value '1' -Type 'Dword'
+	
+
 	# Privacy - Disable feedback in Office.
 	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\office\16.0\common\feedback" -Name "enabled" -Type Dword -Value 0
 	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\office\16.0\common\feedback" -Name "includescreenshot" -Type Dword -Value 0
@@ -507,25 +560,6 @@ function Office_hardening(){
 	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\office\16.0\osm\preventedsolutiontypes" -Name "templatefiles" -Type Dword -Value 1
 
 	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\16.0\common\services\fax' -Name 'nofax' -Type Dword -Value 1 # Disables online Fax services
-
-	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\16.0\access\security' -Name 'vbawarnings' -Type Dword -Value 4    # Blocks Macros and other content execution
-	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\16.0\excel\security' -Name 'vbawarnings' -Value '4' -Type 'Dword' # Blocks Macros and other content execution
-	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\16.0\excel\security' -Name 'blockcontentexecutionfrominternet' -Value '1' -Type 'Dword' # Blocks Macros and other content execution
-	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\16.0\excel\security' -Name 'excelbypassencryptedmacroscan' -Value '0' -Type 'Dword' # Blocks Macros and other content execution
-	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\16.0\ms project\security' -Name 'vbawarnings' -Value '4' -Type 'Dword'  # Blocks Macros and other content execution
-	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\16.0\ms project\security' -Name 'level' -Value '4' -Type 'Dword'  # Blocks Macros and other content execution
-	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\16.0\outlook\security' -Name 'level' -Value '4' -Type 'Dword'  # Blocks Macros and other content execution
-	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\16.0\powerpoint\security' -Name 'vbawarnings' -Value '4' -Type 'Dword'  # Blocks Macros and other content execution
-	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\16.0\powerpoint\security' -Name 'blockcontentexecutionfrominternet' -Value '1' -Type 'Dword'  # Blocks Macros and other content execution
-	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\16.0\publisher\security' -Name 'vbawarnings' -Value '4' -Type 'Dword'  # Blocks Macros and other content execution
-	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\16.0\visio\security' -Name 'vbawarnings' -Value '4' -Type 'Dword'  # Blocks Macros and other content execution
-	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\16.0\visio\security' -Name 'blockcontentexecutionfrominternet' -Value '1' -Type 'Dword'  # Blocks Macros and other content execution
-	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\16.0\word\security' -Name 'vbawarnings' -Value '4' -Type 'Dword'  # Blocks Macros and other content execution
-	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\16.0\word\security' -Name 'blockcontentexecutionfrominternet' -Value '1' -Type 'Dword'  # Blocks Macros and other content execution
-	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\16.0\word\security' -Name 'wordbypassencryptedmacroscan' -Value '0' -Type 'Dword'  # Blocks Macros and other content execution
-	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\common\security' -Name 'automationsecurity' -Value '3' -Type 'Dword'  # Blocks Macros and other content execution
-	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\16.0\outlook\options\mail' -Name 'blockextcontent' -Value '1' -Type 'Dword'  # Disables external content by default in Outlook emails
-	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\16.0\outlook\options\mail' -Name 'junkmailenablelinks' -Value '0' -Type 'Dword'  # Disables external content by default in Outlook emails
 
 	# Privacy - Disable saving/login to OneDrive in Office.
 	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\office\16.0\common\general" -Name "skydrivesigninoption" -Type Dword -Value 0
