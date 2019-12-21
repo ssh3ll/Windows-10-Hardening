@@ -374,22 +374,24 @@ function DisableNetSecProtocols(){
 function DisableNetworks(){
 	Write-Warning 'Disabling unnecessary network connections...'
 	
-	netsh Interface IPv4 Set Global mldlevel=none # Disables IGMPLevel
-	Set-RegistryValue -Path 'HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip6\Parameters' -Name 'DisabledComponents' -Value '0xFF' -Type 'Dword' # Disables IPv6 completely
-
-	# Get-NetAdapter -Name '*' | Set-DNSClient -Interface $_ -RegisterThisConnectionsAddress $FALSE # Disables 'Register this connection's addresses in DNS'
+	#Get-NetAdapter -Name '*' | Set-DNSClient -Interface $_ -RegisterThisConnectionsAddress $FALSE # Disables 'Register this connection's addresses in DNS'
 	Disable-NetAdapterBinding -Name '*' -ComponentID 'ms_lldp' # Microsoft LLDP Protocol Driver
 	Disable-NetAdapterBinding -Name '*' -ComponentID 'ms_implat' # Microsoft Network Adapter Multiplexor Protocol
 	Disable-NetAdapterBinding -Name '*' -ComponentID 'ms_lltdio' # Link-Layer Topology Discovery Mapper I/O Driver
-	Disable-NetAdapterBinding -Name '*' -ComponentID 'ms_tcpip6' # Internet Protocol Version 6 (TCP/IPv6)
 	Disable-NetAdapterBinding -Name '*' -ComponentID 'ms_server' # File and Printer Sharing for Micorsoft Networks
 	Disable-NetAdapterBinding -Name '*' -ComponentID 'ms_rspndr' # Link-Layer Topology Discovery Responder
 	Disable-NetAdapterBinding -Name '*' -ComponentID 'ms_msclient' # Client for Microsft Networks
-	Disable-NetAdapterBinding -Name '*' -ComponentID 'ms_pacer' # QoS a Scheduler
-	#Set-Variable -Name 'Adapter' -Value (Get-WmiObject Win32_NetworkAdapterConfiguration -Filter 'ipenabled = 'true'')
-	#$Adapter.SetTCPIPNetBIOS(2) # Disables NetBIOS over TCP/IP
-	#$AdapterClass.EnableWINS($FALSE,$FALSE) # Disables WINS
-	#Remove-Variable -Name 'Adapter', 'AdapterClass'
+	Disable-NetAdapterBinding -Name '*' -ComponentID 'ms_pacer' # QoS a Scheduler	
+
+	Write-Host 'Done.'
+}
+
+function DisableIPv6(){
+	Write-Warning 'Disabling IPv6...'
+	
+	Set-RegistryValue -Path 'HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip6\Parameters' -Name 'DisabledComponents' -Value '0xFF' -Type 'Dword' # Disables IPv6 completely
+	Disable-NetAdapterBinding -Name '*' -ComponentID 'ms_tcpip6' # Internet Protocol Version 6 (TCP/IPv6)
+
 	Write-Host 'Done.'
 }
 
@@ -1218,6 +1220,8 @@ FlushCaches
 FirewallHardening
 # Disable unneeded network connections
 DisableNetworks
+# Disable IPv6
+DisableIPv6
 # Disable unsafe network security protocols and enable TLS 1.2
 DisableNetSecProtocols
 
