@@ -85,6 +85,8 @@ function RemoveApps(){
 		'WinZipComputing.WinZipUniversal',
 		'Microsoft.ScreenSketch',
 		'Microsoft.XboxGamingOverlay',
+		'Microsoft.Xbox.TCUI',
+		'Microsoft.XboxGameCallableUI',
 		'Microsoft.YourPhone'
 	Foreach ($App in $Apps) {
 		Get-AppxPackage $App | Remove-AppxPackage -AllUsers -ErrorAction 'SilentlyContinue'
@@ -371,23 +373,25 @@ function DisableNetSecProtocols(){
 
 function DisableNetworks(){
 	Write-Warning 'Disabling unnecessary network connections...'
-	netsh Interface IPv4 Set Global mldlevel=none # Disables IGMPLevel
-	Set-RegistryValue -Path 'HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip6\Parameters' -Name 'DisabledComponents' -Value '0xFF' -Type 'Dword' # Disables IPv6 completely
-	Set-RegistryValue -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Remote Assistance' -Name 'fAllowToGetHelp' -Value '0' -Type 'Dword' # Disables Remote Assistance
-	Set-RegistryValue -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Terminal Server' -Name 'fDenyTSConnections' -Value '1' -Type 'Dword' # Disables Remote Desktop
-	# Get-NetAdapter -Name '*' | Set-DNSClient -Interface $_ -RegisterThisConnectionsAddress $FALSE # Disables 'Register this connection's addresses in DNS'
+	
+	#Get-NetAdapter -Name '*' | Set-DNSClient -Interface $_ -RegisterThisConnectionsAddress $FALSE # Disables 'Register this connection's addresses in DNS'
 	Disable-NetAdapterBinding -Name '*' -ComponentID 'ms_lldp' # Microsoft LLDP Protocol Driver
 	Disable-NetAdapterBinding -Name '*' -ComponentID 'ms_implat' # Microsoft Network Adapter Multiplexor Protocol
 	Disable-NetAdapterBinding -Name '*' -ComponentID 'ms_lltdio' # Link-Layer Topology Discovery Mapper I/O Driver
-	Disable-NetAdapterBinding -Name '*' -ComponentID 'ms_tcpip6' # Internet Protocol Version 6 (TCP/IPv6)
 	Disable-NetAdapterBinding -Name '*' -ComponentID 'ms_server' # File and Printer Sharing for Micorsoft Networks
 	Disable-NetAdapterBinding -Name '*' -ComponentID 'ms_rspndr' # Link-Layer Topology Discovery Responder
 	Disable-NetAdapterBinding -Name '*' -ComponentID 'ms_msclient' # Client for Microsft Networks
-	Disable-NetAdapterBinding -Name '*' -ComponentID 'ms_pacer' # QoS a Scheduler
-	#Set-Variable -Name 'Adapter' -Value (Get-WmiObject Win32_NetworkAdapterConfiguration -Filter 'ipenabled = 'true'')
-	#$Adapter.SetTCPIPNetBIOS(2) # Disables NetBIOS over TCP/IP
-	#$AdapterClass.EnableWINS($FALSE,$FALSE) # Disables WINS
-	#Remove-Variable -Name 'Adapter', 'AdapterClass'
+	Disable-NetAdapterBinding -Name '*' -ComponentID 'ms_pacer' # QoS a Scheduler	
+
+	Write-Host 'Done.'
+}
+
+function DisableIPv6(){
+	Write-Warning 'Disabling IPv6...'
+	
+	Set-RegistryValue -Path 'HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip6\Parameters' -Name 'DisabledComponents' -Value '0xFF' -Type 'Dword' # Disables IPv6 completely
+	Disable-NetAdapterBinding -Name '*' -ComponentID 'ms_tcpip6' # Internet Protocol Version 6 (TCP/IPv6)
+
 	Write-Host 'Done.'
 }
 
@@ -475,6 +479,34 @@ function DisableScheduledTasks(){
 
 function Office_hardening(){
 	Write-Warning "Starting Office hardening"
+
+	# Blocks macros and other content execution (Office >= 2016)
+	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\16.0\access\security' -Name 'vbawarnings' -Type Dword -Value 4    
+	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\16.0\excel\security' -Name 'vbawarnings' -Value '4' -Type 'Dword' 
+	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\16.0\excel\security' -Name 'blockcontentexecutionfrominternet' -Value '1' -Type 'Dword' 
+	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\16.0\excel\security' -Name 'excelbypassencryptedmacroscan' -Value '0' -Type 'Dword' 
+	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\16.0\ms project\security' -Name 'vbawarnings' -Value '4' -Type 'Dword' 
+	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\16.0\ms project\security' -Name 'level' -Value '4' -Type 'Dword'  
+	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\16.0\outlook\security' -Name 'level' -Value '4' -Type 'Dword' 
+	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\16.0\powerpoint\security' -Name 'vbawarnings' -Value '4' -Type 'Dword'  
+	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\16.0\powerpoint\security' -Name 'blockcontentexecutionfrominternet' -Value '1' -Type 'Dword'  
+	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\16.0\publisher\security' -Name 'vbawarnings' -Value '4' -Type 'Dword'  
+	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\16.0\visio\security' -Name 'vbawarnings' -Value '4' -Type 'Dword' 
+	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\16.0\visio\security' -Name 'blockcontentexecutionfrominternet' -Value '1' -Type 'Dword' 
+	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\16.0\word\security' -Name 'vbawarnings' -Value '4' -Type 'Dword' 
+	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\16.0\word\security' -Name 'blockcontentexecutionfrominternet' -Value '1' -Type 'Dword' 
+	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\16.0\word\security' -Name 'wordbypassencryptedmacroscan' -Value '0' -Type 'Dword' 
+	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\common\security' -Name 'automationsecurity' -Value '3' -Type 'Dword'
+	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\16.0\outlook\options\mail' -Name 'blockextcontent' -Value '1' -Type 'Dword' 
+	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\16.0\outlook\options\mail' -Name 'junkmailenablelinks' -Value '0' -Type 'Dword' 
+
+
+	# Disable DDE Execution (Excel, Outlook, Word >= Office 2016)
+	Set-RegistryValue -Path 'HKCU:\Software\Microsoft\office\16.0\Excel\Security' -Name 'WorkbookLinkWarnings' -Value '2' -Type 'Dword'
+	Set-RegistryValue -Path 'HKCU:\Software\Microsoft\Office\16.0\Word\Options\WordMail' -Name 'DontUpdateLinks' -Value '1' -Type 'Dword'
+	Set-RegistryValue -Path 'HKCU:\Software\Microsoft\Office\16.0\Word\Options' -Name 'DontUpdateLinks' -Value '1' -Type 'Dword'
+	
+
 	# Privacy - Disable feedback in Office.
 	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\office\16.0\common\feedback" -Name "enabled" -Type Dword -Value 0
 	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\office\16.0\common\feedback" -Name "includescreenshot" -Type Dword -Value 0
@@ -506,25 +538,6 @@ function Office_hardening(){
 
 	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\16.0\common\services\fax' -Name 'nofax' -Type Dword -Value 1 # Disables online Fax services
 
-	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\16.0\access\security' -Name 'vbawarnings' -Type Dword -Value 4    # Blocks Macros and other content execution
-	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\16.0\excel\security' -Name 'vbawarnings' -Value '4' -Type 'Dword' # Blocks Macros and other content execution
-	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\16.0\excel\security' -Name 'blockcontentexecutionfrominternet' -Value '1' -Type 'Dword' # Blocks Macros and other content execution
-	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\16.0\excel\security' -Name 'excelbypassencryptedmacroscan' -Value '0' -Type 'Dword' # Blocks Macros and other content execution
-	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\16.0\ms project\security' -Name 'vbawarnings' -Value '4' -Type 'Dword'  # Blocks Macros and other content execution
-	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\16.0\ms project\security' -Name 'level' -Value '4' -Type 'Dword'  # Blocks Macros and other content execution
-	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\16.0\outlook\security' -Name 'level' -Value '4' -Type 'Dword'  # Blocks Macros and other content execution
-	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\16.0\powerpoint\security' -Name 'vbawarnings' -Value '4' -Type 'Dword'  # Blocks Macros and other content execution
-	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\16.0\powerpoint\security' -Name 'blockcontentexecutionfrominternet' -Value '1' -Type 'Dword'  # Blocks Macros and other content execution
-	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\16.0\publisher\security' -Name 'vbawarnings' -Value '4' -Type 'Dword'  # Blocks Macros and other content execution
-	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\16.0\visio\security' -Name 'vbawarnings' -Value '4' -Type 'Dword'  # Blocks Macros and other content execution
-	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\16.0\visio\security' -Name 'blockcontentexecutionfrominternet' -Value '1' -Type 'Dword'  # Blocks Macros and other content execution
-	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\16.0\word\security' -Name 'vbawarnings' -Value '4' -Type 'Dword'  # Blocks Macros and other content execution
-	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\16.0\word\security' -Name 'blockcontentexecutionfrominternet' -Value '1' -Type 'Dword'  # Blocks Macros and other content execution
-	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\16.0\word\security' -Name 'wordbypassencryptedmacroscan' -Value '0' -Type 'Dword'  # Blocks Macros and other content execution
-	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\common\security' -Name 'automationsecurity' -Value '3' -Type 'Dword'  # Blocks Macros and other content execution
-	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\16.0\outlook\options\mail' -Name 'blockextcontent' -Value '1' -Type 'Dword'  # Disables external content by default in Outlook emails
-	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\16.0\outlook\options\mail' -Name 'junkmailenablelinks' -Value '0' -Type 'Dword'  # Disables external content by default in Outlook emails
-
 	# Privacy - Disable saving/login to OneDrive in Office.
 	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\office\16.0\common\general" -Name "skydrivesigninoption" -Type Dword -Value 0
 	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\office\16.0\common\signin" -Name "signinoptions" -Type Dword -Value 3
@@ -545,24 +558,38 @@ function Office_hardening(){
 
 function RDP_hardening(){
 	# Security - Disable and configure Windows Remote Desktop and Remote Desktop Services.
-	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\Windows NT\Terminal Services" -Name "AllowSignedFiles" -Type Dword -Value 0
-	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\Windows NT\Terminal Services" -Name "AllowUnsignedFiles" -Type Dword -Value 0
-	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\Windows NT\Terminal Services" -Name "DisablePasswordSaving" -Type Dword -Value 1
-	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Conferencing" -Name "NoRDS" -Type Dword -Value 1
-	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WinRM\Service\WinRS" -Name "AllowRemoteShellAccess" -Type Dword -Value 0
-	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services" -Name "AllowSignedFiles" -Type Dword -Value 0
-	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services" -Name "AllowUnsignedFiles"-Type Dword -Value 0
-	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services" -Name "CreateEncryptedOnlyTickets" -Type Dword -Value 1
-	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services" -Name "DisablePasswordSaving" -Type Dword -Value 1
+	
+	# Disable Remote Desktop
+	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services" -Name "fDenyTSConnections" -Type Dword -Value 1
+
+	# Disable Remote Assistance and don't allow unsolicited remote assistance offers
 	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services" -Name "fAllowToGetHelp" -Type Dword -Value 0
 	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services" -Name "fAllowUnsolicited" -Type Dword -Value 0
-	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services" -Name "fDenyTSConnections" -Type Dword -Value 1
-	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services\Client" -Name "fEnableUsbBlockDeviceBySetupClass" -Type Dword -Value 1
-	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services\Client" -Name "fEnableUsbNoAckIsochWriteToDevice" -Type Dword -Value 80
-	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services\Client" -Name "fEnableUsbSelectDeviceByInterface" -Type Dword -Value 1
-	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\WindowsFirewall\StandardProfile\RemoteAdminSettings" -Name "Enabled" -Type Dword -Value 0
-	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\WindowsFirewall\StandardProfile\Services\RemoteDesktop" -Name "Enabled" -Type Dword -Value 0
-	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\WindowsFirewall\StandardProfile\Services\UPnPFramework" -Name "Enabled" -Type Dword -Value 0
+	
+	# Disable Remote Desktop Sharing
+	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Conferencing" -Name "NoRDS" -Type Dword -Value 1
+	
+	# Disable password saving 
+	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\Windows NT\Terminal Services" -Name "DisablePasswordSaving" -Type Dword -Value 1
+	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services" -Name "DisablePasswordSaving" -Type Dword -Value 1
+	
+	# Prevent the client to run signed and unsigned .rdp files
+	<#
+	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\Windows NT\Terminal Services" -Name "AllowSignedFiles" -Type Dword -Value 0
+	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\Windows NT\Terminal Services" -Name "AllowUnsignedFiles" -Type Dword -Value 0
+	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services" -Name "AllowSignedFiles" -Type Dword -Value 0
+	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services" -Name "AllowUnsignedFiles"-Type Dword -Value 0
+	#>
+
+	# Only connect to same version or higher
+	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services" -Name "CreateEncryptedOnlyTickets" -Type Dword -Value 1
+	
+	# Do not allow Remote Shell Access
+	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WinRM\Service\WinRS" -Name "AllowRemoteShellAccess" -Type Dword -Value 0
+
+	# Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\WindowsFirewall\StandardProfile\RemoteAdminSettings" -Name "Enabled" -Type Dword -Value 0
+	# Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\WindowsFirewall\StandardProfile\Services\RemoteDesktop" -Name "Enabled" -Type Dword -Value 0
+	# Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\WindowsFirewall\StandardProfile\Services\UPnPFramework" -Name "Enabled" -Type Dword -Value 0
 }
 
 function Edge_hardening(){
@@ -673,7 +700,7 @@ function Misc(){
 	# General (optional) - Disable Biometrics.
 	# reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Biometrics" /v "Enabled" /t REG_DWORD /d 0 /f
 
-	Set-RegistryValue -Path 'Registry::HKLM\SOFTWARE\Policies\Microsoft\Internet Explorer\Main' -Name 'DisablePasswordReveal' -Value '1' -Type 'Dword'        # Disables password revea button
+	Set-RegistryValue -Path 'Registry::HKLM\SOFTWARE\Policies\Microsoft\Internet Explorer\Main' -Name 'DisablePasswordReveal' -Value '1' -Type 'Dword'        # Disables password reveal button
 	Set-RegistryValue -Path 'Registry::HKCU\Software\Policies\Microsoft\Windows\CredUI' -Name 'DisablePasswordReveal' -Value '1' -Type 'Dword'                # Disables password display button
 
 
@@ -907,30 +934,31 @@ function Misc(){
 function ConfigureWinDef(){
 
 	Write-Warning("Configuring Windows Defender..")
+
 	# Security option - Enable Windows Defender.
 	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender" -Name "DisableAntiSpyware" -Type Dword -Value 0
 	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender" -Name "ServiceKeepAlive" -Type Dword -Value 1
 	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Real-Time Protection" -Name "DisableIOAVProtection" -Type Dword -Value 0
+	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Real-Time Protection" -Name "DisableBehaviorMonitoring" -Type Dword -Value 1
 	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Real-Time Protection" -Name "DisableRealtimeMonitoring" -Type Dword -Value 0
 	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Scan" -Name "CheckForSignaturesBeforeRunningScan" -Type Dword -Value 1
 	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Scan" -Name "DisableHeuristics" -Type Dword -Value 0
 	Set-RegistryValue -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Attachments" -Name "ScanWithAntiVirus"-Type Dword -Value 3
 
+	# Privacy - Configure Windows Defender.
+	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\SpyNet" -Name "LocalSettingOverrideSpynetReporting" -Type Dword -Value 0
+	
+	# Disable automatic sample submission
+	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\SpyNet" -Name "SpyNetReporting" -Type Dword -Value 0
+	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\SpyNet" -Name "SubmitSamplesConsent" -Type Dword -Value 2
+	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Reporting" -Name "DisableGenericRePorts" -Type Dword -Value 1
+	
 	# Privacy option - Disable Windows Defender.
 	# Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender" -Name "DisableAntiSpyware" -Type Dword -Value 1
 	# Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender" -Name "ServiceKeepAlive" -Type Dword -Value 0
 	# Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Real-Time Protection" -Name "DisableIOAVProtection" -Type Dword -Value 1
 	# Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Real-Time Protection" -Name "DisableRealtimeMonitoring" -Type Dword -Value 1
 	# Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Scan" -Name "DisableHeuristics" -Type Dword -Value 1
-
-	# Privacy - Configure Windows Defender.
-	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Real-Time Protection" -Name "DisableBehaviorMonitoring" -Type Dword -Value 1
-	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Reporting" -Name "DisableGenericRePorts" -Type Dword -Value 1
-	# This one raises an alarm on Windows Defender -- keep it at 0!
-	# Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Spynet" -Name "DisableBlockAtFirstSeen" -Type Dword -Value 1
-	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Spynet" -Name "LocalSettingOverrideSpynetReporting" -Type Dword -Value 0
-	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Spynet" -Name "SpynetReporting" -Type Dword -Value 0
-	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Spynet" -Name "SubmitSamplesConsent" -Type Dword -Value 2
 	Write-Host("Done.")
 }
 
@@ -1167,6 +1195,8 @@ FlushCaches
 FirewallHardening
 # Disable unneeded network connections
 DisableNetworks
+# Disable IPv6
+DisableIPv6
 # Disable unsafe network security protocols and enable TLS 1.2
 DisableNetSecProtocols
 
