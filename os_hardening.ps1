@@ -1128,16 +1128,21 @@ Import-Module ".\Utils.psm1"
 # Make sure the script is run with Administrator privileges
 if (-Not (IsAdmin))
 {
-    Write-Warning("The script must be executed with Administrator privileges")
-    return
+	Write-Warning("The script must be executed with Administrator privileges")
+	return
 }
 
+# Let the user choose the registry backup destination directory
+$regBckpDir = Get-Folder(Get-Location)
+if (!$regBckpDir)
+{
+	Write-Warning("You must select a directory to save the .reg files")
+	return
+}
 
-# Registry Hives Backup
+# Perform a backup of the interested Registry Hives
 Write-Host("Backing up registry hives..")
-$regBckpDir = "RegistryBackup"
-New-Item -ItemType Directory -Force -Path $regBckpDir
-Remove-Item -Path $regBckpDir\* 
+Remove-Item -Path $regBckpDir\*.reg
 reg export HKLM $regBckpDir\hklm.reg
 reg export HKCU $regBckpDir\hkcu.reg
 reg export HKCR $regBckpDir\hkcr.reg
