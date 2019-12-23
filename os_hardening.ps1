@@ -1125,6 +1125,13 @@ function DisableStickyKeys{
 # Import required modules
 Import-Module ".\Utils.psm1"
 
+# Make sure the script is run with Administrator privileges
+if (-Not (IsAdmin))
+{
+    Write-Warning("The script must be executed with Administrator privileges")
+    return
+}
+
 
 # Registry Hives Backup
 Write-Host("Backing up registry hives..")
