@@ -16,17 +16,25 @@ Some of the protocols disabled by the script are mentioned below:
 - IPv6
 
 **Note:** The script must be executed with Administrator privileges in order to complete successfully and it also requires a computer restart to apply all the changes. 
+<br /><br />
+- coming soon: a [WPF](https://docs.microsoft.com/en-gb/dotnet/framework/wpf/) application of the same script, which allows the user to know *exactly* what he's going to enable/disable or uninstall. 
+
 
 <br />
 
 
 ### Recommendation
 
-In order to prevent any issue that this script may cause to your system, please take a backup of your registry hives before you run it, so that you can restore all the registry keys to their previous values. 
+In order to prevent any issue that this script may cause to your system, it's recommended to take a backup of your registry hives before you run it, so that you can restore all the registry keys to their previous values. 
+For those that do not want to manually perform the backup, the script saves the registry hives into a directory (chosen by the user) before any change is applied. 
+
 The script uninstall only those applications that are installed by default on every Windows OS and which are not used by the majority of the users. However, you might be among those restricted range of users that need (for instance) the '3D Viewer' application, in that situation you will need to reinstall the software. 
 
+The PS script also disables typically unneeded services, features, and Internet protocols with purpose to improve the security and the privacy provided by your OS. 
+For instance it disables some known weak security communication protocols, such as the SSL and the TLS 1.0 protocols, and it stops several services to save memory, power, and especially to reduce the attack surface. The script also disables features like Macro execution, WiFi Sense and applies several changes to IE and Edge browsers.  
 
-Even though the script has been fully tested with no issue on the latest version of Windows 10 (Home and Pro edition) I *do NOT* assume any responsibility regarding any issue it may cause to your systems. The source code is publicly accessible and therefore you're allowed to inspect its statements or just take a backup as already mentioned before.
+
+Even though the script has been fully tested with no issue on the latest versions of Windows 10 (Home and Pro edition, specifically releases 1903 and 1909) I *do not* assume any responsibility regarding any issue it may cause to your systems. The source code is publicly accessible and therefore you're allowed to inspect its statements or just take/restore a backup as already mentioned before.
 
 
 

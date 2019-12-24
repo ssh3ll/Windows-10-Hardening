@@ -1,6 +1,29 @@
 New-Variable -Name ConsentPromptBehaviorAdmin_Name -Value "ConsentPromptBehaviorAdmin" 
 New-Variable -Name PromptOnSecureDesktop_Name -Value "PromptOnSecureDesktop"  
 New-Variable -Name Key -Value "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" 
+
+
+function Get-Folder($initialDirectory)
+{
+	[System.Reflection.Assembly]::LoadWithPartialName("System.windows.forms")|Out-Null
+
+	$foldername = New-Object System.Windows.Forms.FolderBrowserDialog
+	$foldername.Description = "Select a folder to store your backup files"
+	$foldername.rootfolder = "MyComputer"
+
+	if($foldername.ShowDialog() -eq "OK")
+	{
+		$folder += $foldername.SelectedPath
+	}
+	return $folder
+}
+
+
+function IsAdmin() {  
+	$currentPrincipal = New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())
+	return $currentPrincipal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+}
+
  
 function Get-RegValue($key, $value) {  
 	(Get-ItemProperty $key $value).$value  
@@ -92,7 +115,6 @@ param(
 	If ((Test-Path -Path $Path) -Eq $false) { 
 		$entries = @($Path -split '\',-1,'SimpleMatch')
 		$tmp = $entries[0]
-		#echo $tmp
 		Foreach ( $k in $entries[1..$entries.Count] ){
 			$tmp = "$tmp\$k"
 
@@ -109,3 +131,5 @@ param(
 # Export-ModuleMember -Function Get-UACLevel 
 Export-ModuleMember -Function Set-UACLevel
 Export-ModuleMember -Function Set-RegistryValue
+Export-ModuleMember -Function IsAdmin
+Export-ModuleMember -Function Get-Folder

@@ -1125,15 +1125,32 @@ function DisableStickyKeys{
 # Import required modules
 Import-Module ".\Utils.psm1"
 
+# Make sure the script is run with Administrator privileges
+if (-Not (IsAdmin))
+{
+	Write-Warning("The script must be executed with Administrator privileges")
+	return
+}
 
-# Registry Hives Backup
+# Let the user choose the registry backup destination directory
+$regBckpDir = Get-Folder(Get-Location)
+if (!$regBckpDir)
+{
+	Write-Warning("You must select a directory to save the .reg files")
+	return
+}
+
+# Remove existing backup files
+Remove-Item -Path $regBckpDir\*.reg
+
+# Perform a backup of the interested Registry Hives
 Write-Host("Backing up registry hives..")
-$regBckpDir = "RegistryBackup"
-New-Item -ItemType Directory -Force -Path $regBckpDir
-Remove-Item -Path $regBckpDir\* 
-reg export HKLM $regBckpDir\hklm.reg
-reg export HKCU $regBckpDir\hkcu.reg
-reg export HKCR $regBckpDir\hkcr.reg
+reg export HKLM $regBckpDir\hklm.reg | Out-Null
+Write-Host("HKLM saved successfully")
+reg export HKCU $regBckpDir\hkcu.reg | Out-Null
+Write-Host("HKCU saved successfully")
+reg export HKCR $regBckpDir\hkcr.reg | Out-Null
+Write-Host("HKCR saved successfully")
 Write-Host("Done.")
 
 
@@ -1204,23 +1221,25 @@ DisableNetSecProtocols
 
 # Set user password restrictions
 SetPasswordPolicy
+
 # Set login screen MOTD
 SetLoginMOTD
-# Enforce Exploit Mitigation settings (System-level only)
-# Set-ProcessMitigation -System -Enable DEP, CFG, BottomUp, SEHOP, TerminateOnError, HighEntropy, ForceRelocateImages
-# Enable Memory Integrity -- Core Isolation Win10
-#Set-RegistryValue -Path "HKLM:\SYSTEM\CurrentControlSet\Control\DeviceGuard\Scenarios\HypervisorEnforcedCodeIntegrity" -Name "Enabled" -Value 1 -Type Dword
 
 # Enable and Configure Windows Defender
 if(!$NoAV){
     ConfigureWinDef
 }
+
 # Set UAC Level to High
 Write-Warning 'Setting UAC level to High...'
 # Set the UAC level to the maximum value
 Set-UACLevel 3
 Write-Host 'Done.'
 
+# Enforce Exploit Mitigation settings (System-level only)
+# Set-ProcessMitigation -System -Enable DEP, CFG, BottomUp, SEHOP, TerminateOnError, HighEntropy, ForceRelocateImages
+# Enable Memory Integrity -- Core Isolation Win10
+#Set-RegistryValue -Path "HKLM:\SYSTEM\CurrentControlSet\Control\DeviceGuard\Scenarios\HypervisorEnforcedCodeIntegrity" -Name "Enabled" -Value 1 -Type Dword
 
 
 # Restart the device
