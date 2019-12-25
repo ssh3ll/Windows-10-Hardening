@@ -116,14 +116,8 @@ function DisableSMBServer {
 	Write-Warning "Disabling SMB Server..."
 
 	Set-SmbServerConfiguration -EnableSMB1Protocol $false -Force
-	# Windows 8.1 and Windows 10
-	# Get-WindowsOptionalFeature –Online –FeatureName SMB1Protocol
-	# Enable-WindowsOptionalFeature -Online -FeatureName SMB1Protocol
 	Disable-WindowsOptionalFeature -Online -FeatureName SMB1Protocol
-
-	# Get-SmbServerConfiguration | Select EnableSMB2Protocol
 	Set-SmbServerConfiguration -EnableSMB2Protocol $false -Force
-
 	Set-RegistryValue -Path "HKLM:SYSTEM\CurrentControlSet\services\NetBT\Parameters\" -Name SMBDeviceEnabled -Value 0 -Type Dword
 
 	Write-Host("Done.")
@@ -481,83 +475,87 @@ function Office_hardening(){
 	Write-Warning "Starting Office hardening"
 
 	# Blocks macros and other content execution (Office >= 2016)
-	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\16.0\access\security' -Name 'vbawarnings' -Type Dword -Value 4    
-	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\16.0\excel\security' -Name 'vbawarnings' -Value '4' -Type 'Dword' 
-	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\16.0\excel\security' -Name 'blockcontentexecutionfrominternet' -Value '1' -Type 'Dword' 
-	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\16.0\excel\security' -Name 'excelbypassencryptedmacroscan' -Value '0' -Type 'Dword' 
-	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\16.0\ms project\security' -Name 'vbawarnings' -Value '4' -Type 'Dword' 
-	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\16.0\ms project\security' -Name 'level' -Value '4' -Type 'Dword'  
-	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\16.0\outlook\security' -Name 'level' -Value '4' -Type 'Dword' 
-	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\16.0\powerpoint\security' -Name 'vbawarnings' -Value '4' -Type 'Dword'  
-	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\16.0\powerpoint\security' -Name 'blockcontentexecutionfrominternet' -Value '1' -Type 'Dword'  
-	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\16.0\publisher\security' -Name 'vbawarnings' -Value '4' -Type 'Dword'  
-	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\16.0\visio\security' -Name 'vbawarnings' -Value '4' -Type 'Dword' 
-	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\16.0\visio\security' -Name 'blockcontentexecutionfrominternet' -Value '1' -Type 'Dword' 
-	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\16.0\word\security' -Name 'vbawarnings' -Value '4' -Type 'Dword' 
-	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\16.0\word\security' -Name 'blockcontentexecutionfrominternet' -Value '1' -Type 'Dword' 
-	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\16.0\word\security' -Name 'wordbypassencryptedmacroscan' -Value '0' -Type 'Dword' 
-	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\common\security' -Name 'automationsecurity' -Value '3' -Type 'Dword'
-	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\16.0\outlook\options\mail' -Name 'blockextcontent' -Value '1' -Type 'Dword' 
-	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\16.0\outlook\options\mail' -Name 'junkmailenablelinks' -Value '0' -Type 'Dword' 
+	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\Office\16.0\access\security' -Name 'vbawarnings' -Type Dword -Value 4    
+	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\Office\16.0\excel\security' -Name 'vbawarnings' -Value '4' -Type 'Dword' 
+	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\Office\16.0\excel\security' -Name 'blockcontentexecutionfrominternet' -Value '1' -Type 'Dword' 
+	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\Office\16.0\excel\security' -Name 'excelbypassencryptedmacroscan' -Value '0' -Type 'Dword' 
+	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\Office\16.0\ms project\security' -Name 'vbawarnings' -Value '4' -Type 'Dword' 
+	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\Office\16.0\ms project\security' -Name 'level' -Value '4' -Type 'Dword'  
+	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\Office\16.0\outlook\security' -Name 'level' -Value '4' -Type 'Dword' 
+	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\Office\16.0\powerpoint\security' -Name 'vbawarnings' -Value '4' -Type 'Dword'  
+	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\Office\16.0\powerpoint\security' -Name 'blockcontentexecutionfrominternet' -Value '1' -Type 'Dword'  
+	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\Office\16.0\publisher\security' -Name 'vbawarnings' -Value '4' -Type 'Dword'  
+	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\Office\16.0\visio\security' -Name 'vbawarnings' -Value '4' -Type 'Dword' 
+	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\Office\16.0\visio\security' -Name 'blockcontentexecutionfrominternet' -Value '1' -Type 'Dword' 
+	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\Office\16.0\word\security' -Name 'vbawarnings' -Value '4' -Type 'Dword' 
+	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\Office\16.0\word\security' -Name 'blockcontentexecutionfrominternet' -Value '1' -Type 'Dword' 
+	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\Office\16.0\word\security' -Name 'wordbypassencryptedmacroscan' -Value '0' -Type 'Dword' 
+	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\Office\Common\security' -Name 'automationsecurity' -Value '3' -Type 'Dword'
+	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\Office\16.0\outlook\options\mail' -Name 'blockextcontent' -Value '1' -Type 'Dword' 
+	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\Office\16.0\outlook\options\mail' -Name 'junkmailenablelinks' -Value '0' -Type 'Dword' 
 
 
 	# Disable DDE Execution (Excel, Outlook, Word >= Office 2016)
-	Set-RegistryValue -Path 'HKCU:\Software\Microsoft\office\16.0\Excel\Security' -Name 'WorkbookLinkWarnings' -Value '2' -Type 'Dword'
+	Set-RegistryValue -Path 'HKCU:\Software\Microsoft\Office\16.0\Excel\Security' -Name 'WorkbookLinkWarnings' -Value '2' -Type 'Dword'
 	Set-RegistryValue -Path 'HKCU:\Software\Microsoft\Office\16.0\Word\Options\WordMail' -Name 'DontUpdateLinks' -Value '1' -Type 'Dword'
 	Set-RegistryValue -Path 'HKCU:\Software\Microsoft\Office\16.0\Word\Options' -Name 'DontUpdateLinks' -Value '1' -Type 'Dword'
 	
 
-	# Privacy - Disable feedback in Office.
-	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\office\16.0\common\feedback" -Name "enabled" -Type Dword -Value 0
-	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\office\16.0\common\feedback" -Name "includescreenshot" -Type Dword -Value 0
+	# Disable Feedback in Office.
+	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\Office\16.0\Common\Feedback" -Name "Enabled" -Type Dword -Value 0
+	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\Office\16.0\Common\Feedback" -Name "IncludeScreenshot" -Type Dword -Value 0
 
-	# Privacy - Disable data collection and telemetry in Office.
-	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\office\16.0\common\general" -Name "notrack" -Type Dword -Value 1
-	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\office\16.0\common\general" -Name "optindisable" -Type Dword -Value 1
-	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\office\16.0\common\general" -Name "shownfirstrunoptin" -Type Dword -Value 1
-	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\office\16.0\common\ptwatson" -Name "ptwoptin" -Type Dword -Value 0
-	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\office\16.0\firstrun" -Name "bootedrtm" -Type Dword -Value 1
-	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\office\16.0\firstrun" -Name "disablemovie" -Type Dword -Value 1
-	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\office\16.0\osm" -Name "enablefileobfuscation" -Type Dword -Value 1
-	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\office\16.0\osm" -Name "enablelogging" -Type Dword -Value 0
-	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\office\16.0\osm" -Name "enableupload" -Type Dword -Value 0
-	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\office\16.0\osm\preventedapplications" -Name "accesssolution" -Type Dword -Value 1
-	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\office\16.0\osm\preventedapplications" -Name "olksolution" -Type Dword -Value 1
-	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\office\16.0\osm\preventedapplications" -Name "onenotesolution" -Type Dword -Value 1
-	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\office\16.0\osm\preventedapplications" -Name "pptsolution" -Type Dword -Value 1
-	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\office\16.0\osm\preventedapplications" -Name "projectsolution" -Type Dword -Value 1
-	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\office\16.0\osm\preventedapplications" -Name "publishersolution" -Type Dword -Value 1
-	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\office\16.0\osm\preventedapplications" -Name "visiosolution" -Type Dword -Value 1
-	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\office\16.0\osm\preventedapplications" -Name "wdsolution" -Type Dword -Value 1
-	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\office\16.0\osm\preventedapplications" -Name "xlsolution" -Type Dword -Value 1
-	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\office\16.0\osm\preventedsolutiontypes" -Name "agave" -Type Dword -Value 1
-	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\office\16.0\osm\preventedsolutiontypes" -Name "appaddins" -Type Dword -Value 1
-	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\office\16.0\osm\preventedsolutiontypes" -Name "comaddins" -Type Dword -Value 1
-	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\office\16.0\osm\preventedsolutiontypes" -Name "documentfiles" -Type Dword -Value 1
-	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\office\16.0\osm\preventedsolutiontypes" -Name "templatefiles" -Type Dword -Value 1
+	# Disable data collection and telemetry in Office.
+	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\Office\16.0\Common\general" -Name "notrack" -Type Dword -Value 1
+	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\Office\16.0\Common\general" -Name "optindisable" -Type Dword -Value 1
+	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\Office\16.0\Common\general" -Name "shownfirstrunoptin" -Type Dword -Value 1
+	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\Office\16.0\Common\ptwatson" -Name "ptwoptin" -Type Dword -Value 0
+	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\Office\16.0\firstrun" -Name "bootedrtm" -Type Dword -Value 1
+	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\Office\16.0\firstrun" -Name "disablemovie" -Type Dword -Value 1
+	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\Office\16.0\osm" -Name "enablefileobfuscation" -Type Dword -Value 1
+	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\Office\16.0\osm" -Name "enablelogging" -Type Dword -Value 0
+	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\Office\16.0\osm" -Name "enableupload" -Type Dword -Value 0
+	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\Office\16.0\osm\preventedapplications" -Name "accesssolution" -Type Dword -Value 1
+	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\Office\16.0\osm\preventedapplications" -Name "olksolution" -Type Dword -Value 1
+	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\Office\16.0\osm\preventedapplications" -Name "onenotesolution" -Type Dword -Value 1
+	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\Office\16.0\osm\preventedapplications" -Name "pptsolution" -Type Dword -Value 1
+	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\Office\16.0\osm\preventedapplications" -Name "projectsolution" -Type Dword -Value 1
+	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\Office\16.0\osm\preventedapplications" -Name "publishersolution" -Type Dword -Value 1
+	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\Office\16.0\osm\preventedapplications" -Name "visiosolution" -Type Dword -Value 1
+	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\Office\16.0\osm\preventedapplications" -Name "wdsolution" -Type Dword -Value 1
+	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\Office\16.0\osm\preventedapplications" -Name "xlsolution" -Type Dword -Value 1
+	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\Office\16.0\osm\preventedsolutiontypes" -Name "agave" -Type Dword -Value 1
+	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\Office\16.0\osm\preventedsolutiontypes" -Name "appaddins" -Type Dword -Value 1
+	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\Office\16.0\osm\preventedsolutiontypes" -Name "comaddins" -Type Dword -Value 1
+	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\Office\16.0\osm\preventedsolutiontypes" -Name "documentfiles" -Type Dword -Value 1
+	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\Office\16.0\osm\preventedsolutiontypes" -Name "templatefiles" -Type Dword -Value 1
+	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\Office\16.0\Outlook\Options\Mail' -Name 'EnableLogging' -Type Dword -Value 0
+	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\Office\16.0\Word\Options' -Name 'EnableLogging' -Type Dword -Value 0
+	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\Office\Common\ClientTelemetry' -Name 'DisableTelemetry' -Type Dword -Value 1
 
-	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\office\16.0\common\services\fax' -Name 'nofax' -Type Dword -Value 1 # Disables online Fax services
 
-	# Privacy - Disable saving/login to OneDrive in Office.
-	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\office\16.0\common\general" -Name "skydrivesigninoption" -Type Dword -Value 0
-	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\office\16.0\common\signin" -Name "signinoptions" -Type Dword -Value 3
+	Set-RegistryValue -Path 'HKCU:\Software\Policies\Microsoft\Office\16.0\Common\Services\Fax' -Name 'NoFax' -Type Dword -Value 1 # Disables online Fax services
 
-	# Privacy (optional) - Prevent Office from connecting to the Internet.
-	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\office\16.0\common\internet" -Name "useonlinecontent" -Type Dword -Value 0
+	# Disable saving/login to OneDrive in Office.
+	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\Office\16.0\Common\General" -Name "skydrivesigninoption" -Type Dword -Value 0
+	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\Office\16.0\Common\Signin" -Name "signinoptions" -Type Dword -Value 3
+
+	# Prevent Office from connecting to the Internet.
+	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\Office\16.0\Common\Internet" -Name "UseOnlineContent" -Type Dword -Value 0
 
 	# Security - Enable automatic updates for Office.
-	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\office\16.0\common\officeupdate" -Name "enableautomaticupdates" -Type Dword -Value 1
-	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\office\16.0\common\officeupdate" -Name "hideenabledisableupdates" -Type Dword -Value 1
+	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Office\16.0\Common\officeupdate" -Name "EnableAutomaticUpdates" -Type Dword -Value 1
+	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Office\16.0\Common\officeupdate" -Name "HideEnableDisableUpdates" -Type Dword -Value 1
 
-	# Privacy - Disable online repair in Office.
-	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\office\16.0\common\officeupdate" -Name "onlinerepair" -Type Dword -Value 0
-	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\office\16.0\common\officeupdate" -Name "fallbacktocdn" -Type Dword -Value 0
+	# Disable Online Repair in Office.
+	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Office\16.0\Common\officeupdate" -Name "OnlineRepair" -Type Dword -Value 0
+	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Office\16.0\Common\officeupdate" -Name "fallbacktocdn" -Type Dword -Value 0
 
 	Write-Host "Done."
 }
 
 function RDP_hardening(){
-	# Security - Disable and configure Windows Remote Desktop and Remote Desktop Services.
+	# Disable and configure Windows Remote Desktop and Remote Desktop Services.
 	
 	# Disable Remote Desktop
 	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services" -Name "fDenyTSConnections" -Type Dword -Value 1
@@ -596,37 +594,37 @@ function Edge_hardening(){
 
 	Write-Warning "Starting Edge Hardening..."
 
-	# Security (optional) - Disable Flash player in Edge.
+	# Disable Flash player in Edge.
 	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\MicrosoftEdge\Addons" -Name "FlashPlayerEnabled" -Value '0' -Type 'Dword'
 
-	# Privacy (optional) - Send the Do Not Track (DNT) request header in Edge.
+	# Send the Do Not Track (DNT) request header in Edge.
 	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\MicrosoftEdge\Main" -Name "DoNotTrack" -Value '1' -Type 'Dword'
 
-	# Privacy (optional) - Disable third-party cookies in Edge.
+	# Disable third-party cookies in Edge.
 	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\MicrosoftEdge\Main" -Name "Cookies" -Value '1' -Type 'Dword'
 
-	# Privacy - Prevent data collection in Edge, and generally improve privacy.
+	# Prevent data collection in Edge, and generally improve privacy.
 	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\MicrosoftEdge\Main" -Name "PreventLiveTileDataCollection" -Value '1' -Type 'Dword'
 	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\Windows\EdgeUI" -Name "DisableMFUTracking" -Value '1' -Type 'Dword'
 	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\Windows\EdgeUI" -Name "DisableRecentApps" -Value '1' -Type 'Dword'
 	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\Windows\EdgeUI" -Name "TurnOffBackstack" -Value '1' -Type 'Dword'
 
-	# Security option - Enable Edge phising filter.
+	# Enable Edge phising filter.
 	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\MicrosoftEdge\PhishingFilter" -Name "EnabledV9" -Value '1' -Type 'Dword'
 	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\MicrosoftEdge\PhishingFilter" -Name "EnabledV9" -Value '1' -Type 'Dword'
 
-	# Privacy option - Disable Edge phising filter.
+	# Disable Edge phising filter.
 	# Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\MicrosoftEdge\PhishingFilter" -Name "EnabledV9" -Type Dword -Value 0
 
-	# Privacy (optional) - Clear browsing history on exit in Edge.
+	# Clear browsing history on exit in Edge.
 	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\MicrosoftEdge\Privacy" -Name "ClearBrowsingHistoryOnExit" -Value '1' -Type 'Dword'
 	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\MicrosoftEdge\Privacy" -Name "ClearBrowsingHistoryOnExit" -Value '1' -Type 'Dword'
 
-	# General - Disable help prompt in Edge UI.
+	# Disable help prompt in Edge UI.
 	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\Windows\EdgeUI" -Name "DisableHelpSticker" -Value '1' -Type 'Dword'
 	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\EdgeUI" -Name "DisableHelpSticker" -Value '1' -Type 'Dword'
 
-	# Privacy - Disable search suggestions in Edge.
+	# Disable search suggestions in Edge.
 	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\MicrosoftEdge\SearchScopes" -Name "ShowSearchSuggestionsGlobal" -Value '0' -Type 'Dword'
 
 	Write-Host "Done."
@@ -634,26 +632,27 @@ function Edge_hardening(){
 
 function IE_hardening(){
 	Write-Warning "Starting IE hardening..."
-	# Privacy - Disable Geolocation in Internet Explorer.
+
+	# Disable Geolocation in Internet Explorer.
 	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\Internet Explorer\Geolocation" -Name "PolicyDisableGeolocation" -Type Dword -Value 1
 
-	# Security option - Enable Internet Explorer phising filter.
+	# Enable Internet Explorer phising filter.
 	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\Internet Explorer\PhishingFilter" -Name "EnabledV9" -Type Dword -Value 1
 	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Internet Explorer\PhishingFilter" -Name "EnabledV9" -Type Dword -Value 1
 
-	# Privacy option - Disable Internet Explorer phising filter.
+	# Disable Internet Explorer phising filter.
 	# Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\Internet Explorer\PhishingFilter" -Name "EnabledV9" -Type Dword -Value 0
 	# Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Internet Explorer\PhishingFilter" -Name "EnabledV9" -Type Dword -Value 0
 
-	# Privacy - Disable Internet Explorer InPrivate logging.
+	# Disable Internet Explorer InPrivate logging.
 	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\Internet Explorer\Safety\PrivacIE" -Name "DisableLogging" -Type Dword -Value 1
 	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Internet Explorer\Safety\PrivacIE" -Name "DisableLogging" -Type Dword -Value 1
 
-	# Privacy - Disable Internet Explorer CEIP.
+	# Disable Internet Explorer CEIP.
 	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\Internet Explorer\SQM" -Name "DisableCustomerImprovementProgram" -Type Dword -Value 0
 	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Internet Explorer\SQM" -Name "DisableCustomerImprovementProgram" -Type Dword -Value 0
 
-	# Privacy - Disable enhanced, and other, suggestions.
+	# Disable enhanced, and other, suggestions.
 	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Internet Explorer" -Name "AllowServicePoweredQSA" -Type Dword -Value 0
 	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Internet Explorer\DomainSuggestion" -Name "Enabled" -Type Dword -Value 0
 	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Internet Explorer\SearchScopes" -Name "TopResult" -Type Dword -Value 0
@@ -661,31 +660,31 @@ function IE_hardening(){
 	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Internet Explorer\Main" -Name "AutoSearch" -Type Dword -Value 0
 	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Internet Explorer\Main\WindowsSearch" -Name "EnabledScopes" -Type Dword -Value 0
 
-	# Privacy - Disable continuous browsing.
+	# Disable continuous browsing.
 	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Internet Explorer\ContinuousBrowsing" -Name "Enabled" -Type Dword -Value 0
 
-	# Security - Enable DEP and isolation in Internet Explorer.
+	# Enable DEP and isolation in Internet Explorer.
 	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Internet Explorer\Main" -Name "DEPOff" -Type Dword -Value 0
 	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Internet Explorer\Main" -Name "Isolation64Bit" -Type Dword -Value 1
 
-	# Privacy - Disable prefetching in Internet Explorer.
+	# Disable prefetching in Internet Explorer.
 	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Internet Explorer\PrefetchPrerender" -Name "Enabled" -Type Dword -Value 0
 
-	# Privacy - Disable crash detection in Internet Explorer.
+	# Disable crash detection in Internet Explorer.
 	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Internet Explorer\Restrictions" -Name "NoCrashDetection" -Type Dword -Value 1
 
-	# Privacy (optional) - Send the Do Not Track (DNT) request header in Internet Explorer.
+	# Send the Do Not Track (DNT) request header in Internet Explorer.
 	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Internet Explorer\Main" -Name "DoNotTrack" -Type Dword -Value 1
 
-	# Privacy (optional) - Clear browsing history on exit in Internet Explorer.
+	# Clear browsing history on exit in Internet Explorer.
 	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Internet Explorer\Privacy" -Name "ClearBrowsingHistoryOnExit" -Type Dword -Value 1
 
-    	# Security - Disable SSLv3 fallback, and the ability to ingore certificate errors, in Internet Explorer.
+	# Disable SSLv3 fallback, and the ability to ingore certificate errors, in Internet Explorer.
 	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\CurrentVersion\Internet Settings" -Name "CallLegacyWCMPolicies" -Type Dword -Value 0
 	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\CurrentVersion\Internet Settings" -Name "EnableSSL3Fallback" -Type Dword -Value 0
 	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\CurrentVersion\Internet Settings" -Name "PreventIgnoreCertErrors" -Type Dword -Value 1
 
-	# General - Force enabled HTTP/2 in Internet Explorer.
+	# Force enabled HTTP/2 in Internet Explorer.
 	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\CurrentVersion\Internet Settings" -Name "EnableHTTP2" -Type Dword -Value 1
 
 	Write-Host "Done."
@@ -699,6 +698,12 @@ function Misc(){
 	# reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\DriverSearching" /v "DriverUpdateWizardWuSearchEnabled" /t REG_DWORD /d 0 /f
 	# General (optional) - Disable Biometrics.
 	# reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Biometrics" /v "Enabled" /t REG_DWORD /d 0 /f
+    
+
+	# Explorer Stuffs
+	ExplorerStuffs
+
+
 
 	Set-RegistryValue -Path 'Registry::HKLM\SOFTWARE\Policies\Microsoft\Internet Explorer\Main' -Name 'DisablePasswordReveal' -Value '1' -Type 'Dword'        # Disables password reveal button
 	Set-RegistryValue -Path 'Registry::HKCU\Software\Policies\Microsoft\Windows\CredUI' -Name 'DisablePasswordReveal' -Value '1' -Type 'Dword'                # Disables password display button
@@ -1122,6 +1127,8 @@ function DisableStickyKeys{
 }
 
 
+
+
 # Import required modules
 Import-Module ".\Utils.psm1"
 
@@ -1154,16 +1161,50 @@ Write-Host("HKCR saved successfully")
 Write-Host("Done.")
 
 
-# Disable System Restore
-DisableSysRestore
+
+
+
+# Office Hardening
+Office_hardening
+# Internet Explorer tweaks
+IE_hardening
+# Edge Hardening tweaks
+Edge_hardening
+
+
+# Flush caches
+FlushCaches
+# Disable unneeded network connections
+DisableNetworks
+# Disable unsafe network security protocols and enable TLS 1.2
+DisableNetSecProtocols
+# Disable IPv6
+DisableIPv6
+
+
+# Disable the SMB Server
+DisableSMBServer
+# Disable Sharing MappedDrives
+DisableSharingMappedDrives
+# Disable any Admin Share
+DisableAdminShares
+# Disable the LLMNR Protocol
+DisableLLMNR
+# Disable NetBios
+DisableNetBios
+
+
+# Hardening RDP
+RDP_hardening
 
 
 # Remove Unneeded Apps
 RemoveApps
+
+
 # Stop and Disable Unneeded Services
 DisableServices
-# Scheduled Tasks Hardening
-DisableScheduledTasks
+
 
 # Disable WiFi-Sense
 DisableWiFiSense
@@ -1182,59 +1223,46 @@ DisableAdvertisingID
 # Disables Sticky keys
 DisableStickyKeys
 
-# Privacy - Internet Explorer
-IE_hardening
-# Privacy - Edge Hardening
-Edge_hardening
-# Hardening Office
-Office_hardening
-# Hardening RDP
-RDP_hardening
-# Explorer Stuffs
-ExplorerStuffs
+
+
+
+
+# Windows Firewall hardening
+FirewallHardening
+
+# Scheduled Tasks Hardening
+DisableScheduledTasks
+
 # Mixed Privacy & Security Features
 Misc
 
-# Disable the SMB Server
-DisableSMBServer
-# Disable Sharing MappedDrives
-DisableSharingMappedDrives
-# Disable any Admin Share
-DisableAdminShares
-# Disable the LLMNR Protocol
-DisableLLMNR
-# Disable NetBios
-DisableNetBios
-
-# Flush caches
-FlushCaches
-# Windows Firewall hardening
-FirewallHardening
-# Disable unneeded network connections
-DisableNetworks
-# Disable IPv6
-DisableIPv6
-# Disable unsafe network security protocols and enable TLS 1.2
-DisableNetSecProtocols
 
 
 
-# Set user password restrictions
-SetPasswordPolicy
+# Disable System Restore
+DisableSysRestore
 
 # Set login screen MOTD
 SetLoginMOTD
-
-# Enable and Configure Windows Defender
-if(!$NoAV){
-    ConfigureWinDef
-}
 
 # Set UAC Level to High
 Write-Warning 'Setting UAC level to High...'
 # Set the UAC level to the maximum value
 Set-UACLevel 3
 Write-Host 'Done.'
+
+# Enable and Configure Windows Defender
+if(!$NoAV){
+    ConfigureWinDef
+}
+
+# Set user password restrictions
+SetPasswordPolicy
+
+
+
+
+
 
 # Enforce Exploit Mitigation settings (System-level only)
 # Set-ProcessMitigation -System -Enable DEP, CFG, BottomUp, SEHOP, TerminateOnError, HighEntropy, ForceRelocateImages
