@@ -104,6 +104,34 @@ function DisableNetBios {
 	Write-Host("Done.")
 }
 
+# Disable AutoPlay and AutoRun
+function DisableAutoPlayRun {
+	Write-Warning "Disabling AutoPlay and AutoRun..."
+	Set-RegistryValue -Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer' -Name 'NoAutorun' -Value '1' -Type 'Dword' # Disables Autorun
+	Set-RegistryValue -Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer' -Name 'NoDriveTypeAutoRun' -Value '255' -Type 'Dword' # Disables Autorun
+	Set-RegistryValue -Path 'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\AutoplayHandlers' -Name 'DisableAutoplay' -Value '1' -Type 'Dword' # Disables Autoplay
+	Write-Host("Done.")
+}
+
+# Disable Find My Device
+function DisableFindMyDevice {
+	Write-Warning "Disabling AutoPlay and AutoRun..."
+	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\FindMyDevice" -Name "AllowFindMyDevice" -Value 0 -Type Dword
+	Set-RegistryValue -Path "HKLM:\SOFTWARE\Microsoft\Settings\FindMyDevice" -Name "LocationSyncEnabled" -Value 0 -Type Dword
+	Write-Host("Done.")
+}
+
+# Disable Win Insider Program
+function DisableWinInsiderProgram {
+	Write-Warning "Disabling AutoPlay and AutoRun..."
+	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\PreviewBuilds" -Name "AllowBuildPreview" -Value 0 -Type Dword
+	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\PreviewBuilds" -Name "EnableConfigFlighting" -Value 0 -Type Dword
+	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate" -Name "ManagePreviewBuilds" -Value 1 -Type Dword
+	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate" -Name "ManagePreviewBuildsPolicyValue" -Value 0 -Type Dword
+	Write-Host("Done.")
+}
+
+
 # Disable Link-Local Multicast Name Resolution (LLMNR) protocol
 function DisableLLMNR {
 	Write-Warning "Disabling LLMNR..."
@@ -703,7 +731,14 @@ function Misc(){
 	# Explorer Stuffs
 	ExplorerStuffs
 
+	# Disable both AutoRun and AutoPlay
+	DisableAutoPlayRun
 
+	# Disable FindMyDevice
+	DisableFindMyDevice
+
+	# Disable Insider Program PreviewBuild
+	DisableWinInsiderProgram
 
 	Set-RegistryValue -Path 'Registry::HKLM\SOFTWARE\Policies\Microsoft\Internet Explorer\Main' -Name 'DisablePasswordReveal' -Value '1' -Type 'Dword'        # Disables password reveal button
 	Set-RegistryValue -Path 'Registry::HKCU\Software\Policies\Microsoft\Windows\CredUI' -Name 'DisablePasswordReveal' -Value '1' -Type 'Dword'                # Disables password display button
@@ -724,11 +759,6 @@ function Misc(){
 	# Security - Force enable Data Execution Prevention (DEP).
 	reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\Explorer" /v "NoDataExecutionPrevention" /t REG_DWORD /d 0 /f
 	reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\System" /v "DisableHHDEP" /t REG_DWORD /d 0 /f
-
-	# Security - Disable Autorun & AutoPlay
-	Set-RegistryValue -Path 'Registry::HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer' -Name 'NoAutorun' -Value '1' -Type 'Dword' # Disables Autorun
-	Set-RegistryValue -Path 'Registry::HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer' -Name 'NoDriveTypeAutoRun' -Value '255' -Type 'Dword' # Disables Autorun
-	Set-RegistryValue -Path 'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\AutoplayHandlers' -Name 'DisableAutoplay' -Value '1' -Type 'Dword' # Disables Autoplay
 
 	# Security - Disable Active Desktop.
 	reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer" /v "ForceActiveDesktopOn" /t REG_DWORD /d 0 /f
@@ -787,17 +817,14 @@ function Misc(){
 	Set-RegistryValue -Path 'Registry::HKLM\SOFTWARE\Policies\Microsoft\SQMClient\Windows' -Name 'CEIPEnable' -Value '0' -Type 'Dword' # Disables CEIP for apps and generally
 	# Privacy (optional) - Disable the camera.
 	# reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Camera" /v "AllowCamera" /t REG_DWORD /d 0 /f
-	# Privacy - Disable Find My Device.
-	reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\FindMyDevice" /v "AllowFindMyDevice" /t REG_DWORD /d 0 /f
+
 	# Privacy - Disable the Network Connectivity Status Indicator.
 	# reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\NetworkConnectivityStatusIndicator" /v "DisablePassivePolling" /t REG_DWORD /d 1 /f
 	reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\NetworkConnectivityStatusIndicator" /v "NoActiveProbe" /t REG_DWORD /d 1 /f
 	# Privacy - Disable OneDrive for file storage.
 	reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\OneDrive" /v "DisableFileSyncNGSC" /t REG_DWORD /d 1 /f
 	reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\OneDrive" /v "DisableLibrariesDefaultSaveToOneDrive" /t REG_DWORD /d 0 /f
-	# Privacy - Disable Windows Insider Program.
-	reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\PreviewBuilds" /v "AllowBuildPreview" /t REG_DWORD /d 0 /f
-	reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\PreviewBuilds" /v "EnableConfigFlighting" /t REG_DWORD /d 0 /f
+
 	# Privacy - Disable setting sync.
 	reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\SettingSync" /v "DisableSettingSync" /t REG_DWORD /d 2 /f
 	reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\SettingSync" /v "DisableSettingSyncUserOverride" /t REG_DWORD /d 1 /f
