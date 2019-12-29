@@ -745,7 +745,7 @@ function IE_hardening(){
 function Misc(){
 
 	# Explorer Stuffs
-	ExplorerStuffs
+	# ExplorerStuffs
 
 	# Disable both AutoRun and AutoPlay
 	DisableAutoPlayRun
