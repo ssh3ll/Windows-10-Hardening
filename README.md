@@ -1,7 +1,7 @@
 # Windows-10-hardening
 
 ### Description
-The goal of this project is to improve both privacy and security that are provided by default in your Windows 10 operating system, either Pro or Home edition.
+The goal of this project is to improve both privacy and security provided by default in your Windows 10 operating system, either Pro or Home edition.
 
 The Powershell script is intended to harden your OS. It does so by turning on/off some specific features known to have led to several attacks and security vulnerabilities in the paste, or that might affect the privacy of the system users. 
 It also uninstalls and disables known services and default applications which are not needed by the majority of the users. 
@@ -17,8 +17,11 @@ Some of the protocols disabled by the script are mentioned below:
 
 **Note:** The script must be executed with Administrator privileges in order to complete successfully and it also requires a computer restart to apply all the changes. 
 <br /><br />
-- coming soon: a [WPF](https://docs.microsoft.com/en-gb/dotnet/framework/wpf/) application of the same script, which allows the user to know *exactly* what he's going to enable/disable or uninstall. 
 
+The script is also provided as a standalone WPF GUI Windows application, for those that doesn't feel comfortable to read the source code or blindly run a script that wasn't written by them. 
+Moreover, the WPF application allows its users to explicitly select/unselect the features they wish to enable/disable or the services and applications they want to stop or uninstall. 
+
+For more information on how to install and run the application, please refer to the [section](#Install-and-Run-the-WPF-Application) below. 
 
 <br />
 
@@ -38,7 +41,7 @@ Even though the script has been fully tested with no issue on the latest version
 
 
 
-### How to Run
+### How to Run the PS Script
 
 Open a CMD prompt and run the following command from the directory that contains the target script:
 
@@ -47,6 +50,30 @@ Open a CMD prompt and run the following command from the directory that contains
 In case you don't use Windows Defender as your anti-malware solution, run the script as shown below:
 
     powershell -exec bypass ".\os_hardening.ps1 -NoAV"
+
+
+### Install and Run the WPF Application
+
+1. Download the Win10HardeningSetup.zip archive and extract its content into any directory
+2. In order to install the application: double-click the extracted **.msi** file <br />(**Note:** this will create a shortcut on your Desktop whereas all the files will be stored into the C:\Program Files (x86)\Win10_Hardening_Setup\ directory)
+
+3.1 Just right click the shortcut on your Desktop and "Run as Administrator", as shown below:
+
+![alt text](img/image01.png)
+
+3.2 An alternative way to run the application is to open a CMD prompt with Administrator privileges and then run the following two commands:
+
+    cd c:\Program Files (x86)\Win10_Hardening_Setup\
+    Win10Hardening.exe
+    
+Once the application is running it should be really easy to understand the way it works. <br />
+The users are supposed to select/unselect the options available on the several pages whether they want to perform the changes mentioned to the right of each selected option. The *Apps* page allows users select the applications they want to remove whereas the *Services* page allows to stop and prevent specific services to run when your device is turned on.
+The next two screenshots depict the current, very simple, GUI of the application.
+
+![alt text](img/image04.png)
+
+![alt text](img/image03.png)
+
 
 ### Contribution
 
