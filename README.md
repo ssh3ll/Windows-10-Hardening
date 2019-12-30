@@ -18,7 +18,7 @@ Some of the protocols disabled by the script are mentioned below:
 **Note:** The script must be executed with Administrator privileges in order to complete successfully and it also requires a computer restart to apply all the changes. 
 <br /><br />
 
-The script is also provided as a standalone WPF GUI Windows application, for those that doesn't feel comfortable to read the source code or blindly run a script that wasn't written by them. 
+The script is also provided as a standalone [WPF](https://docs.microsoft.com/en-us/dotnet/framework/wpf/) GUI Windows application, for those that doesn't feel comfortable to read the source code or blindly run a script that wasn't written by them. 
 Moreover, the WPF application allows its users to explicitly select/unselect the features they wish to enable/disable or the services and applications they want to stop or uninstall. 
 
 For more information on how to install and run the application, please refer to the [section](#Install-and-Run-the-WPF-Application) below. 
@@ -54,7 +54,7 @@ In case you don't use Windows Defender as your anti-malware solution, run the sc
 
 ### Install and Run the WPF Application
 
-1. Download the Win10HardeningSetup.zip archive and extract its content into any directory
+1. Download the [Win10HardeningSetup.zip](https://github.com/ssh3ll/Windows-10-Hardening/releases/download/v1.0/Win10HardeningSetup.zip) archive and extract its content into any directory
 2. In order to install the application: double-click the extracted **.msi** file <br />(**Note:** this will create a shortcut on your Desktop whereas all the files will be stored into the C:\Program Files (x86)\Win10_Hardening_Setup\ directory)
 
 3.1 Just right click the shortcut on your Desktop and "Run as Administrator", as shown below:
