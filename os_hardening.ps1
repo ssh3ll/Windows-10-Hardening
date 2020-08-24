@@ -123,7 +123,7 @@ function DisableFindMyDevice {
 
 # Disable Win Insider Program
 function DisableWinInsiderProgram {
-	Write-Warning "Disabling AutoPlay and AutoRun..."
+	Write-Warning "Disabling Win Insider Program..."
 	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\PreviewBuilds" -Name "AllowBuildPreview" -Value 0 -Type Dword
 	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\PreviewBuilds" -Name "EnableConfigFlighting" -Value 0 -Type Dword
 	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate" -Name "ManagePreviewBuilds" -Value 1 -Type Dword
@@ -133,7 +133,7 @@ function DisableWinInsiderProgram {
 
 # Disable Active Desktop
 function DisableActiveDesktop {
-	Write-Warning "Disabling AutoPlay and AutoRun..."
+	Write-Warning "Disable Active Desktop..."
 	Set-RegistryValue -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer" -Name "ForceActiveDesktopOn" -Value 0 -Type Dword
 	Set-RegistryValue -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer" -Name "NoActiveDesktop" -Value 1 -Type Dword
 	Set-RegistryValue -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer" -Name "NoActiveDesktopChanges" -Value 1 -Type Dword
@@ -144,14 +144,14 @@ function DisableActiveDesktop {
 
 # Disable Picture Password
 function DisablePicturePassword {
-	Write-Warning "Disabling AutoPlay and AutoRun..."
+	Write-Warning "Disable Picture Password..."
 	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\System" -Name "BlockDomainPicturePassword" -Value 1 -Type Dword
 	Write-Host("Done.")
 }
 
 # Enable Enhanced Face Spoofing Protection
 function EnableEnhancedFaceSpoofingProtection {
-	Write-Warning "Disabling AutoPlay and AutoRun..."
+	Write-Warning "Enable Enhanced Face Spoofing Protection..."
 	Set-RegistryValue -Name "HKLM:\SOFTWARE\Policies\Microsoft\Biometrics\FacialFeatures" -Name "EnhancedAntiSpoofing" -Value 1 -Type Dword
 	Write-Host("Done.")
 }
@@ -1077,7 +1077,7 @@ function DisableSysRestore{
 		Set-RegistryValue -Path 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\SystemRestore' -Name 'DisableSR' -Value '1' -Type 'Dword'
 		
 		Disable-ScheduledTask -TaskName "\Microsoft\Windows\SystemRestore\SR"
-		Write-Host("`nSystem Restore Disabled")
+		Write-Host("System Restore Disabled")
 	}
 }
 
