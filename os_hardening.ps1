@@ -83,6 +83,7 @@ function RemoveApps(){
 		'A278AB0D.DisneyMagicKingdoms',
 		'WinZipComputing.WinZipUniversal',
 		'Microsoft.ScreenSketch',
+		'Microsoft.XboxGamingOverlay',
 		'Microsoft.Xbox.TCUI',
 		'Microsoft.XboxGameCallableUI',
 		'Microsoft.YourPhone'
