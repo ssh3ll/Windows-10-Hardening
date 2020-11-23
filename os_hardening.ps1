@@ -115,7 +115,7 @@ function DisableAutoPlayRun {
 
 # Disable Find My Device
 function DisableFindMyDevice {
-	Write-Warning "Disabling AutoPlay and AutoRun..."
+	Write-Warning "Disabling Find My Device..."
 	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\FindMyDevice" -Name "AllowFindMyDevice" -Value 0 -Type Dword
 	Set-RegistryValue -Path "HKLM:\SOFTWARE\Microsoft\Settings\FindMyDevice" -Name "LocationSyncEnabled" -Value 0 -Type Dword
 	Write-Host("Done.")
@@ -296,7 +296,7 @@ function DisableServices(){
 		'wercplsupport', # Problem Reports & Solutions Control Panel
 		'TroubleshootingSvc', # Recommended Troubleshooting Service
 		'SessionEnv', # Remote Desktop Configuration
-		'TermService', # Remote Desjtop Service
+		'TermService', # Remote Desktop Service
 		'UmRdpService', # Remote Desktop Services UserMode Port Redirector
 		'RpcLocator', # Remote Procedure Call (RPC) Locator
 		'RetailDemo', # Retail Demo Service
@@ -661,11 +661,11 @@ function Edge_hardening(){
 	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\Windows\EdgeUI" -Name "DisableRecentApps" -Value '1' -Type 'Dword'
 	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\Windows\EdgeUI" -Name "TurnOffBackstack" -Value '1' -Type 'Dword'
 
-	# Enable Edge phising filter.
+	# Enable Edge phishing filter.
 	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\MicrosoftEdge\PhishingFilter" -Name "EnabledV9" -Value '1' -Type 'Dword'
 	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\MicrosoftEdge\PhishingFilter" -Name "EnabledV9" -Value '1' -Type 'Dword'
 
-	# Disable Edge phising filter.
+	# Disable Edge phishing filter.
 	# Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\MicrosoftEdge\PhishingFilter" -Name "EnabledV9" -Type Dword -Value 0
 
 	# Clear browsing history on exit in Edge.
@@ -688,11 +688,11 @@ function IE_hardening(){
 	# Disable Geolocation in Internet Explorer.
 	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\Internet Explorer\Geolocation" -Name "PolicyDisableGeolocation" -Type Dword -Value 1
 
-	# Enable Internet Explorer phising filter.
+	# Enable Internet Explorer phishing filter.
 	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\Internet Explorer\PhishingFilter" -Name "EnabledV9" -Type Dword -Value 1
 	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Internet Explorer\PhishingFilter" -Name "EnabledV9" -Type Dword -Value 1
 
-	# Disable Internet Explorer phising filter.
+	# Disable Internet Explorer phishing filter.
 	# Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\Internet Explorer\PhishingFilter" -Name "EnabledV9" -Type Dword -Value 0
 	# Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Internet Explorer\PhishingFilter" -Name "EnabledV9" -Type Dword -Value 0
 
@@ -704,7 +704,7 @@ function IE_hardening(){
 	Set-RegistryValue -Path "HKCU:\Software\Policies\Microsoft\Internet Explorer\SQM" -Name "DisableCustomerImprovementProgram" -Type Dword -Value 0
 	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Internet Explorer\SQM" -Name "DisableCustomerImprovementProgram" -Type Dword -Value 0
 
-	# Disable enhanced, and other, suggestions.
+	# Disable enhanced, and other suggestions.
 	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Internet Explorer" -Name "AllowServicePoweredQSA" -Type Dword -Value 0
 	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Internet Explorer\DomainSuggestion" -Name "Enabled" -Type Dword -Value 0
 	Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Internet Explorer\SearchScopes" -Name "TopResult" -Type Dword -Value 0
