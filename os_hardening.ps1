@@ -50,7 +50,6 @@ function RemoveApps(){
 		'Microsoft.Getstarted',
 		'Microsoft.Messaging',
 		'Microsoft.Office.Sway',
-		'Microsoft.OneConnect',
 		'Microsoft.WindowsReadingList',
 		'9E2F88E3.Twitter',
 		'PandoraMediaInc.29680B314EFC2',
@@ -84,7 +83,6 @@ function RemoveApps(){
 		'A278AB0D.DisneyMagicKingdoms',
 		'WinZipComputing.WinZipUniversal',
 		'Microsoft.ScreenSketch',
-		'Microsoft.XboxGamingOverlay',
 		'Microsoft.Xbox.TCUI',
 		'Microsoft.XboxGameCallableUI',
 		'Microsoft.YourPhone'
