@@ -61,7 +61,7 @@ In case you don't use Windows Defender as your anti-malware solution, run the sc
 
 ![alt text](img/image01.png)
 
-3.2 An alternative way to run the application is to open a CMD prompt with Administrator privileges and then run the following two commands:
+3.2 Alternatively, run the application is to open a CMD prompt with Administrator privileges and then run the following two commands:
 
     cd c:\Program Files (x86)\Win10_Hardening_Setup\
     Win10Hardening.exe
