@@ -7,7 +7,7 @@ The Powershell script is intended to harden your OS. It does so by turning on/of
 It also uninstalls and disables known services and default applications which are not needed by the majority of the users. 
 
 
-Thus, it attempts to remove/disable every unneeded application, protocol, and more in general software that stand on your operating system just to increase the attack surface. Among the applications the script removes you can find the Bing and XBox applications that are installed by default and many others. 
+Thus, it attempts to remove/disable every unneeded application, protocol, and more in general software that stand on your operating system just to increase the attack surface. Among the applications the script removes you can find the Bing and XBox applications that are installed by default and many others. The GUI app on the other hand, allows to select any application or service, despite it is considered useful or not. Thus, select them with caution.
 
 Some of the protocols disabled by the script are mentioned below:
 - NetBios
@@ -37,7 +37,7 @@ The PS script also disables typically unneeded services, features, and Internet 
 For instance it disables some known weak security communication protocols, such as the SSL and the TLS 1.0 protocols, and it stops several services to save memory, power, and especially to reduce the attack surface. The script also disables features like Macro execution, WiFi Sense and applies several changes to IE and Edge browsers.  
 
 
-Even though the script has been fully tested with no issue on the latest versions of Windows 10 (Home and Pro edition, specifically releases 1903 and 1909) I *do not* assume any responsibility regarding any issue it may cause to your systems. The source code is publicly accessible and therefore you're allowed to inspect its statements or just take/restore a backup as already mentioned before.
+Even though the script has been fully tested with no issue on the latest versions of Windows 10 (Home and Pro edition, specifically releases until 21H1) I *do not* assume any responsibility regarding any issue it may cause to your systems. The source code is publicly accessible and therefore you're allowed to inspect its statements or just take/restore a backup as already mentioned before. 
 
 
 

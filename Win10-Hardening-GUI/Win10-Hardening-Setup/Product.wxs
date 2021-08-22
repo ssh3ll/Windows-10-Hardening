@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"><?define Win10-Hardening-GUI_TargetDir=$(var.Win10-Hardening.TargetDir)?>
+	<Product Id="*" Name="Win10_Hardening_Setup" Language="1033" Version="1.0.0.0" Manufacturer="Astra-Auto.com" UpgradeCode="97345c4a-14a9-486f-b30b-ae1b47680a37">
+		<Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" />
+
+		<MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
+		<MediaTemplate />
+
+		<Feature Id="ProductFeature" Title="Win10_Hardening_Setup" Level="1">
+			<ComponentGroupRef Id="ProductComponents" />
+      <ComponentGroupRef Id="ComponentGroupDesktopShortcut" />
+		</Feature>
+	</Product>
+
+	<Fragment>
+		<Directory Id="TARGETDIR" Name="SourceDir">
+			<Directory Id="ProgramFilesFolder">
+				<Directory Id="INSTALLFOLDER" Name="Win10_Hardening_Setup">
+				  <Directory Id="Files" Name="Files" />
+				</Directory>
+			</Directory>
+      <Directory Id="DesktopFolder" Name="DesktopFolder" />
+		</Directory>
+	</Fragment>
+
+	<Fragment>
+		<ComponentGroup Id="ProductComponents" Directory="INSTALLFOLDER">
+			<!-- TODO: Remove the comments around this Component element and the ComponentRef below in order to add resources to this installer. -->
+			<!-- <Component Id="ProductComponent"> -->
+				<!-- TODO: Insert files, registry keys, and other resources here. -->
+			<!-- </Component> -->
+			<Component Id="Win10Hardening.exe" Guid="11fab8ec-a6e6-4d62-91b3-b2f30f58b926">
+			  <File Id="Win10Hardening.exe" Name="Win10Hardening.exe" Source="$(var.Win10-Hardening-GUI_TargetDir)Win10Hardening.exe" />
+			</Component>
+			<Component Id="Win10Hardening.exe.config" Guid="2bb04a4b-3205-4564-b851-f7d7d716e456">
+			  <File Id="Win10Hardening.exe.config" Name="Win10Hardening.exe.config" Source="$(var.Win10-Hardening-GUI_TargetDir)Win10Hardening.exe.config" />
+			</Component>
+			<Component Id="Microsoft.WindowsAPICodePack.dll" Guid="82636c99-f03c-4fb3-abf9-a4ac7a07bf91">
+			  <File Id="Microsoft.WindowsAPICodePack.dll" Name="Microsoft.WindowsAPICodePack.dll" Source="$(var.Win10-Hardening-GUI_TargetDir)Microsoft.WindowsAPICodePack.dll" />
+			</Component>
+			<Component Id="Microsoft.WindowsAPICodePack.Shell.dll" Guid="e83898ff-1e0f-464d-aaf2-1d4064090173">
+			  <File Id="Microsoft.WindowsAPICodePack.Shell.dll" Name="Microsoft.WindowsAPICodePack.Shell.dll" Source="$(var.Win10-Hardening-GUI_TargetDir)Microsoft.WindowsAPICodePack.Shell.dll" />
+			</Component>
+			<Component Id="System.Management.Automation.dll" Guid="ee8fa614-1824-4894-ae47-bca4060b6443">
+			  <File Id="System.Management.Automation.dll" Name="System.Management.Automation.dll" Source="$(var.Win10-Hardening-GUI_TargetDir)System.Management.Automation.dll" />
+			</Component>
+			<Component Id="Microsoft.Management.Infrastructure.dll" Guid="ec8d557a-0fe2-4d7e-ac76-45eceb877a9b">
+			  <File Id="Microsoft.Management.Infrastructure.dll" Name="Microsoft.Management.Infrastructure.dll" Source="$(var.Win10-Hardening-GUI_TargetDir)Microsoft.Management.Infrastructure.dll" />
+			</Component>
+		</ComponentGroup>
+	</Fragment>
+	<Fragment>
+    <!--Desktop Shortcut-->
+    <ComponentGroup Id="ComponentGroupDesktopShortcut">
+      <Component Id="ComponentDesktopShortcut" Guid="*" Directory="DesktopFolder" >
+        <Shortcut Id="AppDesktopShortcut"
+                  Name="Win-10-Hardening"
+                  Description="DESCRIPTION"
+                  Directory="DesktopFolder"
+                  Target="[#Win10Hardening.exe]"
+                  WorkingDirectory="INSTALLFOLDER"/>
+        <!--Remove desktop shortcut on uninstall-->
+        <RemoveFolder Id="DesktopFolder" On="uninstall"/>
+        <RegistryValue Root="HKCU" Key="Software\MYSOFTWARE\Win10Hardening" Name="installed" Type="integer" Value="1" KeyPath="yes" />
+      </Component>
+    </ComponentGroup>
+	</Fragment>
+</Wix>
