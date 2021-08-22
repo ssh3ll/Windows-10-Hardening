@@ -1,0 +1,6 @@
+C:\Users\ssh3ll\Documents\Win10-Hardening\Win10-Hardening-Setup\bin\Debug\cab1.cab
+C:\Users\ssh3ll\Documents\Win10-Hardening\Win10-Hardening-Setup\bin\Debug\Win10_Hardening_Setup.msi
+C:\Users\ssh3ll\Documents\Win10-Hardening\Win10-Hardening-Setup\bin\Debug\Win10_Hardening_Setup.wixpdb
+C:\Users\lore\Desktop\Win10-Hardening-GUI-master\Win10-Hardening-GUI\Win10-Hardening-Setup\bin\Debug\cab1.cab
+C:\Users\lore\Desktop\Win10-Hardening-GUI-master\Win10-Hardening-GUI\Win10-Hardening-Setup\bin\Debug\Win10_Hardening_Setup.msi
+C:\Users\lore\Desktop\Win10-Hardening-GUI-master\Win10-Hardening-GUI\Win10-Hardening-Setup\bin\Debug\Win10_Hardening_Setup.wixpdb

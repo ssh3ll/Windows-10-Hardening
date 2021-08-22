@@ -1,0 +1,33 @@
+﻿<Window x:Class="Win10Hardening.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        
+        xmlns:wf="clr-namespace:System.Windows.Forms;assembly=System.Windows.Forms" 
+        xmlns:wpf="http://schemas.microsoft.com/netfx/2007/xaml/presentation" 
+        xmlns:local="clr-namespace:Win10Hardening"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="450" Width="800">
+
+    <DockPanel>
+        <StackPanel Orientation="Vertical">
+            <Grid>
+                <TabControl Name="tabControl" HorizontalAlignment="Center"
+                    Height="299"
+                    Margin="10,10,0,0"
+                    VerticalAlignment="Top"
+                    Width="490">
+                </TabControl>
+            </Grid>
+            <StackPanel Name="stackPanel2" HorizontalAlignment="Center" Orientation="Horizontal">
+                <Button HorizontalAlignment="Left" Name="sel_evrthng" FontWeight="Bold" Margin="5 10 0 0" Height="30" Width="100">Select All</Button>
+                <Button HorizontalAlignment="Left" Name="unsel_evrthng" FontWeight="Bold" Margin="25 10 0 0" Height="30" Width="100">Unselect All</Button>
+                <Button HorizontalAlignment="Center" Name="harden" FontWeight="Bold" Click="HardenBtn_Click" Foreground ="DarkSlateGray" Margin="110 10 0 0" Height="50" Width="100">Harden</Button>
+            </StackPanel>
+            <StackPanel Name="stackPanel3">
+            </StackPanel>
+        </StackPanel>
+    </DockPanel>
+
+</Window>
